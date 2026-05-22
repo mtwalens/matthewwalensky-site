@@ -1,0 +1,30 @@
+{
+  "name": "Matthew Walensky",
+  "projects": {
+    "film": {
+      "title": "Days Until College",
+      "category": "Short Film",
+      "desc": "Two best friends, Sam and Teddy, find their lifelong friendship on the line as they navigate a tumultuous summer of questionable decisions and questionable relationships, all while preparing for the wild adventure that is college life."
+    },
+    "redsox": {
+      "title": "Boston Red Sox",
+      "category": "Sports Media \u00b7 Videographer / Editor",
+      "desc": "Internship with the Boston Red Sox media team \u2014 producing, shooting, and editing video content across music videos, game highlights, community outreach, and social media."
+    },
+    "usc": {
+      "title": "USC Athletics",
+      "category": "Sports Content \u00b7 Multi-Role",
+      "desc": "Multi-role contributor to USC Athletics \u2014 editing and producing Water Polo content, technical directing live broadcasts, and operating cameras for basketball and baseball coverage."
+    },
+    "brew": {
+      "title": "The Morning Brew",
+      "category": "Trojan Vision \u00b7 Host / Senior Producer",
+      "desc": "A live USC student-produced morning show on Trojan Vision. As Senior Producer, oversaw the full production of the show. As Host of the Delish segment, led on-camera food and taste-test features across four episodes."
+    },
+    "freelance": {
+      "title": "Freelance",
+      "category": "Independent Work \u00b7 Multi-role",
+      "desc": "A collection of freelance photo and video work spanning commercial, documentary, event, and narrative formats \u2014 always with a distinct visual perspective."
+    }
+  }
+}

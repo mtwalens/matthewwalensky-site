@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matthew Walensky</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=70">
+</head>
+<body class="loading" data-page="home">
+
+  <div class="cursor-dot"></div>
+
+  <!-- ── LOADER ── -->
+  <div class="loader" id="loader">
+    <div class="loader-name">
+      <span class="loader-line">Matthew Walensky</span>
+    </div>
+  </div>
+
+  <!-- ── HORIZONTAL TRACK: Projects | Home | Stills ── -->
+  <div class="app" id="app">
+
+    <!-- LEFT: Projects — horizontal-accordion strips (Jimmy Chin style) -->
+    <section class="page page--projects" data-page="projects">
+      <button class="page-tl" data-action="contact">Contact</button>
+      <button class="page-tr" data-go="home">Home</button>
+
+      <!-- Vertical PROJECTS label rotated on the left edge -->
+      <div class="proj-side-label" aria-hidden="true">Projects</div>
+
+      <div class="proj-accordion" id="projAccordion">
+        <button class="proj-strip" data-project="freelance">
+          <div class="proj-strip-bg" style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/691125a0-2f3f-4923-b415-d58ea3c017a1/IMG_3725.jpeg?format=1500w')"></div>
+          <div class="proj-strip-veil"></div>
+          <div class="proj-strip-label">
+            <span class="proj-strip-num">01</span>
+            <span class="proj-strip-name">Freelance</span>
+            <span class="proj-strip-cat">Independent</span>
+          </div>
+        </button>
+        <button class="proj-strip" data-project="brew">
+          <div class="proj-strip-bg" style="background-image:url('images/projects/the-morning-brew-bts.jpeg')"></div>
+          <div class="proj-strip-veil"></div>
+          <div class="proj-strip-label">
+            <span class="proj-strip-num">03</span>
+            <span class="proj-strip-name">The Morning Brew</span>
+            <span class="proj-strip-cat">Trojan Vision</span>
+          </div>
+        </button>
+        <button class="proj-strip" data-project="usc">
+          <div class="proj-strip-bg" style="background-image:url('images/projects/usc-athletics-bts.jpeg')"></div>
+          <div class="proj-strip-veil"></div>
+          <div class="proj-strip-label">
+            <span class="proj-strip-num">04</span>
+            <span class="proj-strip-name">USC Athletics</span>
+            <span class="proj-strip-cat">Sports Content</span>
+          </div>
+        </button>
+        <button class="proj-strip" data-project="redsox">
+          <div class="proj-strip-bg" style="background-image:url('images/projects/brs-bts.jpeg')"></div>
+          <div class="proj-strip-veil"></div>
+          <div class="proj-strip-label">
+            <span class="proj-strip-num">05</span>
+            <span class="proj-strip-name">Boston Red Sox</span>
+            <span class="proj-strip-cat">Sports Media</span>
+          </div>
+        </button>
+        <button class="proj-strip" data-project="film">
+          <div class="proj-strip-bg" style="background-image:url('images/projects/days-until-college-bts.jpg'), url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/3185d8c5-0532-451d-9165-e431b5791dac/IMG_3583.jpeg?format=1500w')"></div>
+          <div class="proj-strip-veil"></div>
+          <div class="proj-strip-label">
+            <span class="proj-strip-num">06</span>
+            <span class="proj-strip-name">Days Until College</span>
+            <span class="proj-strip-cat">Short Film</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Detail overlay slides UP from below when a strip is clicked -->
+      <div class="proj-detail-overlay" id="projDetail" aria-hidden="true"></div>
+    </section>
+
+    <!-- CENTER: Home — full-bleed hero with directional hover-reveals -->
+    <section class="page page--home" data-page="home">
+      <!-- Default hero background -->
+      <div class="hero-bg-img" id="heroBgDefault" style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/8e978087-cefb-4568-a667-c5e4328a6c75/IMG_3636.JPEG?format=2500w')"></div>
+
+      <!-- Directional preview layers (slide in from the matching side on hover) -->
+      <div class="hero-preview hero-preview--left"   data-for="projects" style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/691125a0-2f3f-4923-b415-d58ea3c017a1/IMG_3725.jpeg?format=1500w')"></div>
+      <div class="hero-preview hero-preview--center" data-for="about"    style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1500w')"></div>
+      <div class="hero-preview hero-preview--right"  data-for="stills"   style="background-image:url('images/gallery/environmental/DSCF2774.jpg')"></div>
+
+      <div class="hero-veil"></div>
+
+      <!-- Top-left: Contact link -->
+      <button class="home-tl" data-action="contact">Contact</button>
+
+      <!-- Top-center: big name header -->
+      <h1 class="home-name">Matthew Walensky</h1>
+
+      <!-- Top-right: socials (icons only) -->
+      <div class="home-tr">
+        <a href="https://www.instagram.com/mwal.jpeg/" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://linkedin.com/in/matthewwalensky" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+      </div>
+
+      <!-- Lower-third words — strict 1/3 grid with hairline dividers between -->
+      <nav class="hero-nav" aria-label="Sections">
+        <button class="hero-word hero-word--left" data-go="projects" data-for="projects">
+          <span class="hero-word-label">Projects</span>
+        </button>
+        <button class="hero-word hero-word--center" data-go="about" data-for="about">
+          <span class="hero-word-label">About</span>
+        </button>
+        <button class="hero-word hero-word--right" data-go="stills" data-for="stills">
+          <span class="hero-word-label">Stills</span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- RIGHT: Stills page (slides in when home goes LEFT) -->
+    <section class="page page--stills" data-page="stills">
+      <button class="page-tl" data-go="home">Home</button>
+      <button class="page-tr" data-action="contact">Contact</button>
+      <div class="stills-layout">
+        <aside class="stills-filters">
+          <header class="page-header">
+            <span class="page-eyebrow">03</span>
+            <h1 class="page-title">Stills</h1>
+          </header>
+          <nav class="filter-list">
+            <button class="filter-btn active" data-cat="all">All</button>
+            <button class="filter-btn" data-cat="nature">Nature</button>
+            <button class="filter-btn" data-cat="sports">Sports</button>
+            <button class="filter-btn" data-cat="street">Street</button>
+            <button class="filter-btn" data-cat="portrait">Portrait</button>
+          </nav>
+        </aside>
+        <div class="stills-content" id="stillsContent">
+          <!-- gallery grid is built by JS into here -->
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.app -->
+
+  <!-- ABOUT: slides UP from below when opened -->
+  <section class="page page--about" data-page="about">
+    <button class="page-back page-back--top" data-go="home" aria-label="Back to home">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><polyline points="3,9 7,5 11,9"/></svg>
+      <span>Home</span>
+    </button>
+    <div class="about-inner">
+      <div class="about-left">
+        <header class="page-header">
+          <span class="page-eyebrow">02</span>
+          <h1 class="page-title">About</h1>
+        </header>
+        <h2 class="about-headline">Creating social impact<br><em>through visual media</em></h2>
+        <p class="about-body">
+          Matthew Walensky is a University of Southern California graduate from the Annenberg School of Communication and Journalism and the School of Cinematic Arts.
+        </p>
+        <p class="about-body">
+          With experience spanning professional sports, brand content, short film, and editorial photography, Matthew brings a thoughtful, human-centered perspective to every project — driven by a mission to create real social impact through the power of visual storytelling.
+        </p>
+        <div class="about-roles">
+          <span>Videographer</span>
+          <span>Photographer</span>
+          <span>Editor</span>
+          <span>Producer</span>
+          <span>Technician</span>
+        </div>
+        <div class="about-actions">
+          <button class="about-btn" id="contactBtn">Get in Touch</button>
+          <a class="about-btn about-btn--ghost" href="Matthew-Walensky-Resume.pdf" target="_blank">Download Résumé</a>
+        </div>
+        <div class="about-socials">
+          <a href="https://www.instagram.com/mwal.jpeg/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://linkedin.com/in/matthewwalensky" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="mailto:mtwalensky@gmail.com" aria-label="Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,7 12,14 22,7"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="about-right">
+        <img src="https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1000w" alt="Matthew Walensky"/>
+        <div class="about-image-caption">USC · Annenberg &amp; Cinematic Arts</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROJECT MODAL (still used by accord-tabs) ── -->
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    <div class="modal-inner">
+      <div id="modalMedia"></div>
+      <div class="modal-content">
+        <span class="section-label" id="modalCategory"></span>
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <div class="modal-tabs" id="modalTabs"></div>
+        <p class="modal-desc" id="modalDesc"></p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+
+  <!-- ── ADMIN PANEL (visible only when ?admin=1) ── -->
+  <div class="admin-panel" id="adminPanel" aria-hidden="true">
+    <div class="admin-panel-inner">
+      <header class="admin-header">
+        <h2>Admin</h2>
+        <div class="admin-header-actions">
+          <button class="admin-exit" id="adminExit" title="Exit admin mode entirely (you can return with ?admin=1)">Exit Admin</button>
+          <button class="admin-close" id="adminClose" aria-label="Close">✕</button>
+        </div>
+      </header>
+      <nav class="admin-tabs" role="tablist">
+        <button class="admin-tab active" data-tab="content">Site Copy</button>
+        <button class="admin-tab" data-tab="videos">Videos</button>
+        <button class="admin-tab" data-tab="photos">Photos</button>
+        <button class="admin-tab" data-tab="help">How to Use</button>
+      </nav>
+      <div class="admin-body">
+        <section class="admin-section active" data-section="content">
+          <p class="admin-note">Edit text shown across the site. Save writes to <code>content.json</code> and the page re-renders.</p>
+          <div id="adminContentForm"></div>
+          <button class="admin-save" id="adminSaveContent">Save Site Copy</button>
+        </section>
+        <section class="admin-section" data-section="videos">
+          <p class="admin-note">Edit every video's title. Drag a row to reorder. Saves automatically.</p>
+          <div id="adminVideoBrowser"></div>
+        </section>
+        <section class="admin-section" data-section="photos">
+          <p class="admin-note">Add or edit photo captions. Saves automatically. To reorder photos visually, open the Stills page (drag-and-drop auto-saves).</p>
+          <div id="adminCaptionBrowser"></div>
+        </section>
+        <section class="admin-section" data-section="help">
+          <h3>Admin URL</h3>
+          <p>Enable on any device: append <code>?admin=1</code> to the URL (e.g. <code>matthewwalensky.com/?admin=1</code>). Disable: <code>?admin=0</code>. Setting persists in your browser.</p>
+          <h3>Site Copy</h3>
+          <p>Edit names, titles, descriptions. Click <strong>Save Site Copy</strong> when done — locally it writes to <code>content.json</code>; on the live site it falls back to copying the JSON to your clipboard, which you paste into <code>content.json</code> and commit.</p>
+          <h3>Videos</h3>
+          <p>Pick a project then a tab to see each video's title in editable form, drag to reorder, then save.</p>
+          <h3>Photos</h3>
+          <p>Use the shortcut buttons to jump to a category. Drag thumbnails to reorder. Click <strong>Save order → manifest.json</strong>.</p>
+          <h3>Adding new media</h3>
+          <p><strong>Photos:</strong> drop into <code>images/gallery/&lt;cat&gt;/</code>, run <code>python3 generate-manifest.py</code>.<br>
+          <strong>Videos:</strong> drop MP4s into <code>videos/&lt;project&gt;/&lt;tab&gt;/</code> or paste URLs into <code>_links.txt</code> in that folder, then run <code>python3 generate-videos.py</code>.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+  <button class="admin-fab" id="adminFab" aria-label="Open admin panel">⚙</button>
+
+  <!-- ── LIGHTBOX ── -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <img id="lightboxImg" src="" alt=""/>
+  </div>
+
+  <!-- ── CONTACT FORM MODAL ── -->
+  <div class="cf-modal" id="cfModal">
+    <div class="cf-modal-inner">
+      <button class="cf-close" id="cfClose">✕</button>
+      <h3 class="cf-title">Send a Message</h3>
+      <form class="cf-form" id="cfForm" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="contact">
+        <p style="display:none"><input name="bot-field"></p>
+        <div class="cf-row">
+          <div class="cf-group">
+            <label>Name</label>
+            <input type="text" name="name" required placeholder="Your name">
+          </div>
+          <div class="cf-group">
+            <label>Email</label>
+            <input type="email" name="email" required placeholder="your@email.com">
+          </div>
+        </div>
+        <div class="cf-group">
+          <label>Subject</label>
+          <input type="text" name="subject" placeholder="What's this about?">
+        </div>
+        <div class="cf-group">
+          <label>Message</label>
+          <textarea name="message" required placeholder="Tell me about your project..."></textarea>
+        </div>
+        <button type="submit" class="cf-submit">Send Message</button>
+      </form>
+      <div class="cf-success" id="cfSuccess">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="9,12 11,14 15,10"/></svg>
+        <p>Message sent — I'll be in touch soon.</p>
+      </div>
+    </div>
+  </div>
+  <div class="cf-backdrop" id="cfBackdrop"></div>
+
+  <script src="script.js?v=77"></script>
+</body>
+</html>

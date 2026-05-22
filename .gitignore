@@ -1,0 +1,25 @@
+# Local video files — hosted on Vimeo, not deployed
+*.mp4
+*.mov
+*.webm
+*.m4v
+
+# macOS / editor cruft
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Editor folders
+.vscode/
+.idea/
+
+# Dev-server backups
+*.bak
