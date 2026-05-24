@@ -2111,3 +2111,359 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
   .gallery-grid { grid-template-columns: repeat(2, 1fr); }
   .footer { flex-direction: column; gap: 8px; text-align: center; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   MOBILE OVERHAUL — phone widths (≤780px and ≤480px)
+   Appended last so it wins specificity battles across the file.
+   ════════════════════════════════════════════════════════════════ */
+
+/* Touch devices: hide the custom cursor entirely. */
+@media (hover: none), (pointer: coarse) {
+  body { cursor: auto !important; }
+  .cursor-dot { display: none !important; }
+  *, *::before, *::after { cursor: inherit !important; }
+}
+
+@media (max-width: 780px) {
+
+  /* ── Loader scales down ── */
+  .loader-name { font-size: clamp(1.8rem, 8vw, 2.4rem) !important; }
+
+  /* ── Home (landing) ── */
+  .page--home { display: flex; flex-direction: column; }
+  /* Big, prominent name fills the previously-empty top band */
+  .home-name {
+    position: static !important;
+    transform: none !important;
+    padding: 40px 16px 22px !important;
+    font-family: 'Oswald', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: clamp(1.8rem, 7vw, 2.4rem) !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--warm-white);
+    z-index: 6;
+  }
+  .home-tl, .home-tr {
+    position: absolute; top: 12px;
+    padding: 10px 14px !important;
+    font-size: 0.55rem !important;
+    letter-spacing: 0.2em !important;
+    z-index: 7;
+  }
+  .home-tl { left: 0; }
+  .home-tr { right: 0; gap: 14px !important; }
+  .home-tr svg { width: 16px; height: 16px; }
+
+  /* Words: stack vertically with their preview image always visible. */
+  .hero-nav {
+    position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    padding: 60px 0 0 !important;
+    margin-top: auto;
+    min-height: calc(100vh - 60px);
+    gap: 1px;
+    background: rgba(13,11,9,0.5);
+  }
+  .hero-word {
+    flex: 1 1 0 !important;
+    padding: 0 !important;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  /* Each word card shows its own preview image as background */
+  .hero-word::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    filter: brightness(0.45) saturate(0.95);
+    transition: filter 0.3s ease;
+    z-index: 0;
+  }
+  .hero-word--left::after   { background-image: url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/691125a0-2f3f-4923-b415-d58ea3c017a1/IMG_3725.jpeg?format=1500w'); }
+  .hero-word--center::after { background-image: url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1500w'); }
+  .hero-word--right::after  { background-image: url('images/gallery/environmental/DSCF2774.jpg'); }
+  .hero-word:active::after  { filter: brightness(0.7) saturate(1); }
+  .hero-word + .hero-word::before { display: none; }   /* hide vertical dividers */
+  /* Force the label to sit at the exact vertical + horizontal center of its card. */
+  .hero-word {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .hero-word-label {
+    position: relative; z-index: 1;
+    font-size: clamp(2.4rem, 9vw, 3.6rem) !important;
+    letter-spacing: 0.03em !important;
+    margin: 0 !important;
+    text-align: center !important;
+  }
+  .hero-bg-img, .hero-preview, .hero-veil { display: none !important; }
+  /* On mobile we always show all 3 preview images (one per word) — no hover system needed */
+  .hero-nav:has(.hero-word:hover) .hero-word { opacity: 1; }
+
+  /* ── Top corners on sub-pages ── */
+  .page-tl, .page-tr {
+    top: 16px !important;
+    padding: 8px 12px !important;
+    font-size: 0.55rem !important;
+    letter-spacing: 0.2em !important;
+    z-index: 31 !important;           /* sit above the centered name + sticky filters */
+  }
+  .page-tl { left: 14px !important; }
+  .page-tr { right: 14px !important; }
+
+  /* MATTHEW WALENSKY centered in the top bar on sub-pages.
+     Lives on the page itself (not body) so it doesn't fall under the
+     transformed .app ancestor — stays correctly centered. */
+  .page--projects::after,
+  .page--stills::after {
+    content: 'MATTHEW WALENSKY';
+    position: absolute;
+    top: 16px; left: 0; right: 0;
+    text-align: center;
+    z-index: 30;
+    pointer-events: none;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    color: var(--warm-white);
+    text-transform: uppercase;
+  }
+  /* Hide it while a project detail overlay is open */
+  body.proj-detail-open .page--projects::after { display: none !important; }
+
+  /* ── Projects accordion: ALL 5 strips fit on one screen (no scroll) ── */
+  .page--projects { overflow: hidden !important; }
+  .proj-accordion {
+    flex-direction: column !important;
+    height: 100vh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding-top: 56px;          /* room for the CONTACT/HOME corners + page name */
+    box-sizing: border-box;
+  }
+  .proj-strip {
+    flex: 1 1 0 !important;     /* split remaining height evenly across 5 strips */
+    height: auto !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(240,230,208,0.08) !important;
+  }
+  .proj-strip:last-child { border-bottom: none !important; }
+  .proj-accordion:has(.proj-strip:hover) .proj-strip,
+  .proj-accordion .proj-strip:hover,
+  .proj-accordion .proj-strip.active {
+    flex: 1 1 0 !important;     /* don't try to expand on mobile */
+    height: auto !important;
+  }
+  /* Tighter label so it fits in the smaller strip */
+  .proj-strip-label { bottom: 14px !important; }
+  .proj-strip-name { font-size: clamp(1.05rem, 4.4vw, 1.5rem) !important; }
+  .proj-strip-cat { font-size: 0.55rem !important; letter-spacing: 0.18em !important; }
+  .proj-strip-label {
+    top: auto !important;
+    bottom: 24px !important;
+    transform: none !important;
+  }
+  .proj-strip:hover .proj-strip-label { transform: none !important; }
+  .proj-strip-name { font-size: clamp(1.4rem, 5vw, 1.8rem) !important; }
+  .proj-strip-cat  { opacity: 1 !important; transform: none !important; }
+  .proj-side-label { display: none !important; }
+
+  /* ── Project detail overlay: single-column ── */
+  .proj-detail-inner,
+  .proj-detail-inner--wide {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+    padding: 64px 18px 24px !important;
+    gap: 18px !important;
+    text-align: left;
+    align-items: stretch !important;
+  }
+  .proj-detail-text {
+    align-items: flex-start !important;
+    text-align: left !important;
+    max-width: 100% !important;
+  }
+  .proj-detail-title { font-size: clamp(1.6rem, 6.5vw, 2.2rem) !important; }
+  .proj-detail-title--logo-only .proj-detail-logo--large { max-height: 70px !important; max-width: 240px !important; }
+  .proj-detail-desc { font-size: 0.92rem !important; line-height: 1.65 !important; }
+  .proj-detail-roles { justify-content: flex-start !important; }
+  .proj-detail-award { align-items: flex-start !important; }
+  .proj-detail-award img { max-width: 140px !important; max-height: 140px !important; }
+  .proj-detail-tabs {
+    justify-content: flex-start !important;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    margin: 0 -18px 0;
+    padding: 0 18px;
+  }
+  .proj-detail-tabs::-webkit-scrollbar { display: none; }
+  .proj-detail-tab { flex-shrink: 0; padding: 8px 12px !important; }
+  .proj-detail-media .accord-video,
+  .proj-detail-inner--wide .proj-detail-media .accord-video {
+    max-height: 55vh !important;
+  }
+  .proj-detail-close {
+    top: 12px !important; right: 14px !important;
+    padding: 7px 12px !important; font-size: 0.55rem !important;
+  }
+
+  /* Project footer: stack centered */
+  .proj-detail-footer { margin: 32px 18px 0 !important; padding: 20px 0 !important; }
+  .proj-detail-footer-inner {
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+    gap: 14px !important;
+  }
+  .proj-detail-footer-right { text-align: center !important; }
+  .proj-detail-footer-socials { justify-content: center !important; }
+
+  /* Slideshow on Freelance */
+  .proj-detail-media--slideshow {
+    grid-template-columns: 36px 1fr 36px !important;
+    gap: 8px !important;
+    max-width: 100% !important;
+  }
+  .slide-title { font-size: clamp(1.2rem, 5vw, 1.6rem) !important; }
+  .slide-back {
+    top: 56px !important; left: 18px !important;
+    padding: 7px 12px !important; font-size: 0.55rem !important;
+  }
+
+  /* Video grid (multi-video projects) → single column on phones */
+  .proj-detail-inner--wide .video-grid { columns: 1 !important; }
+  .video-grid { grid-template-columns: 1fr !important; }
+  .video-thumb { max-height: none !important; }
+
+  /* ── Stills page: filters as a top bar, vertical-scroll masonry ── */
+  /* Keep .page--stills as its own clipped frame so the absolute-positioned
+     CONTACT/HOME corners (and the centered MATTHEW WALENSKY pseudo) stay
+     pinned to the top while the gallery inside scrolls. */
+  .page--stills {
+    overflow: hidden !important;
+    height: 100vh !important;
+    position: relative;
+  }
+  .stills-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    min-height: 0 !important;
+  }
+  .stills-filters {
+    flex: 0 0 auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 56px 16px 12px !important;
+    background: var(--surface);
+  }
+  .stills-filters .page-header { margin-bottom: 12px !important; }
+  .stills-filters .page-title { font-size: 1.4rem !important; }
+  .filter-list {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    gap: 16px !important;
+    margin-top: 8px !important;
+    padding-bottom: 4px;
+  }
+  .filter-list::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    padding: 6px 0 !important;
+    font-size: 1rem !important;
+    flex-shrink: 0;
+  }
+  .filter-btn.active::before { display: none !important; }
+
+  /* The actual scroll container on mobile — content scrolls vertically here */
+  .stills-content {
+    flex: 1 1 auto !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 0 !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+  .stills-content .gallery-panel,
+  .stills-content .gallery-panel--stills {
+    width: 100% !important;
+    height: auto !important;
+  }
+  .stills-content .gallery-grid {
+    display: block !important;
+    columns: 2 !important;
+    column-gap: 8px !important;
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: unset !important;
+  }
+  /* Hide the per-row wrappers and let items flow into the columns directly */
+  .stills-content .gallery-row {
+    display: contents !important;
+  }
+  .stills-content .gallery-item {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    margin: 0 0 8px !important;
+    break-inside: avoid !important;
+    flex: unset !important;
+  }
+  .stills-content .gallery-item img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    object-fit: cover !important;
+  }
+  /* Hide the "scroll →" hint on mobile since we scroll vertically now */
+  .stills-hint { display: none !important; }
+
+  /* ── About page ── */
+  .page--about { overflow-y: auto; }
+  .about-inner {
+    grid-template-columns: 1fr !important;
+    padding: 64px 18px 32px !important;
+    gap: 28px !important;
+  }
+  .about-headline { font-size: clamp(1.5rem, 6vw, 2rem) !important; }
+  .about-body { font-size: 0.95rem !important; line-height: 1.7 !important; }
+  .about-right { order: -1; }
+  .about-right img { max-height: 50vh; object-fit: cover; }
+  .about-actions { flex-direction: column !important; }
+  .about-btn { width: 100%; text-align: center; }
+
+  /* ── Admin panel: full width sheet ── */
+  body.admin-mode .admin-panel { width: 100vw !important; }
+  .admin-panel-inner { padding: 18px !important; }
+
+  /* ── Contact form modal ── */
+  .cf-modal-inner { width: 92vw !important; padding: 28px 18px !important; }
+}
+
+/* Extra-tight phone sizing */
+@media (max-width: 380px) {
+  .home-name { font-size: 0.85rem !important; }
+  .home-tl, .home-tr { font-size: 0.5rem !important; padding: 8px 10px !important; }
+  .home-tr { gap: 10px !important; }
+  .home-tr svg { width: 14px; height: 14px; }
+  .hero-word-label { font-size: 2.2rem !important; }
+  .proj-strip-name { font-size: 1.2rem !important; }
+}
+
+/* Landscape phones: cap the stacked landing height so it stays usable */
+@media (max-width: 780px) and (orientation: landscape) {
+  .hero-nav { min-height: 100vh; flex-direction: row !important; }
+  .hero-word { flex: 1 1 0 !important; }
+}

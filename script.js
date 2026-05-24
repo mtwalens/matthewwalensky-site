@@ -807,17 +807,10 @@ const projects = {
     slideshow: true,
     slides: [
       {
-        title: 'Mercury',
-        subtitle: 'Educational Video · Editor',
-        cover: 'videos/freelance/MERCURY_DRAFT.jpg',
-        video: 'https://vimeo.com/1194799388',
-        desc: 'Edited educational narration video about the planet Mercury — pacing visuals, archival NASA imagery, and voiceover into a clean, engaging short.',
-      },
-      {
         title: 'Shangri La Museum',
         subtitle: 'Cinematic Walkthrough · Oahu, Hawaii',
         cover: 'videos/freelance/Shangri_la Sizzle.jpg',
-        video: 'https://vimeo.com/1194799389',
+        video: 'https://vimeo.com/1194799388',
         desc: 'A cinematic walkthrough of the Shangri La Museum estate in Oahu, Hawaii — highlighting key art pieces and the architecture of Doris Duke\'s former home.',
       },
       {
