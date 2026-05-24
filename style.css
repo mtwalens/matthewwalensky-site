@@ -520,7 +520,7 @@ body[data-page="about"] .page--about { transform: translateY(0); }
 }
 
 .proj-accordion {
-  display: flex; flex-direction: row;
+  display: flex; flex-direction: row-reverse;     /* desktop: Freelance ◀── Days Until College */
   width: 100%; height: 100%;
 }
 .proj-strip {
@@ -2131,19 +2131,20 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
 
   /* ── Home (landing) ── */
   .page--home { display: flex; flex-direction: column; }
-  /* Big, prominent name fills the previously-empty top band */
+  /* Big, prominent name in the top band — tight padding so cards sit right under it */
   .home-name {
     position: static !important;
     transform: none !important;
-    padding: 40px 16px 22px !important;
+    padding: 30px 16px 10px !important;
     font-family: 'Oswald', sans-serif !important;
     font-weight: 700 !important;
-    font-size: clamp(1.8rem, 7vw, 2.4rem) !important;
+    font-size: clamp(1.6rem, 6vw, 2.1rem) !important;
     letter-spacing: 0.04em !important;
     text-transform: uppercase;
     text-align: center;
     color: var(--warm-white);
     z-index: 6;
+    flex: 0 0 auto;
   }
   .home-tl, .home-tr {
     position: absolute; top: 12px;
@@ -2156,15 +2157,16 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
   .home-tr { right: 0; gap: 14px !important; }
   .home-tr svg { width: 16px; height: 16px; }
 
-  /* Words: stack vertically with their preview image always visible. */
+  /* Words: stack vertically and fill the space below the name header. */
   .hero-nav {
     position: static !important;
     display: flex !important;
     flex-direction: column !important;
     grid-template-columns: none !important;
-    padding: 60px 0 0 !important;
-    margin-top: auto;
-    min-height: calc(100vh - 60px);
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 1 1 auto !important;          /* fills remaining viewport, no dead gap */
+    min-height: 0 !important;
     gap: 1px;
     background: rgba(13,11,9,0.5);
   }
@@ -2185,7 +2187,7 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
     transition: filter 0.3s ease;
     z-index: 0;
   }
-  .hero-word--left::after   { background-image: url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/691125a0-2f3f-4923-b415-d58ea3c017a1/IMG_3725.jpeg?format=1500w'); }
+  .hero-word--left::after   { background-image: url('images/projects/days-until-college-bts.jpg'); }
   .hero-word--center::after { background-image: url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1500w'); }
   .hero-word--right::after  { background-image: url('images/gallery/environmental/DSCF2774.jpg'); }
   .hero-word:active::after  { filter: brightness(0.7) saturate(1); }
@@ -2242,7 +2244,7 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
   /* ── Projects accordion: ALL 5 strips fit on one screen (no scroll) ── */
   .page--projects { overflow: hidden !important; }
   .proj-accordion {
-    flex-direction: column !important;
+    flex-direction: column !important;   /* mobile: Days Until College on top ▼ Freelance at bottom */
     height: 100vh !important;
     min-height: 0 !important;
     overflow: hidden !important;
