@@ -430,9 +430,15 @@ body.proj-detail-open .page--projects .page-tr {
   transition: transform 0.85s var(--ease);
   overflow-y: auto;
   will-change: transform;
-  display: flex; flex-direction: column;   /* lets the footer sit at the bottom */
 }
-.about-footer { margin-top: auto; }        /* push it to the bottom of the page */
+/* Footer is a normal block at the end of the about page — sits beneath the
+   grid, full width, no overlap. Reduce the grid's bottom padding so the
+   handoff to the footer feels intentional. */
+.about-footer {
+  border-top: 1px solid var(--border);
+  background: var(--surface, var(--bg));
+}
+body[data-page="about"] .about-inner { padding-bottom: clamp(40px, 6vh, 70px); }
 body[data-page="about"] .page--about { transform: translateY(0); }
 
 .about-inner {
