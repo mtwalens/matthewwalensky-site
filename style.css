@@ -437,6 +437,9 @@ body.proj-detail-open .page--projects .page-tr {
 .about-footer {
   border-top: 1px solid var(--border);
   background: var(--surface, var(--bg));
+  /* Override the project-footer's inset margins — span the full page width. */
+  margin: 0 !important;
+  padding: clamp(20px, 2.5vh, 32px) clamp(40px, 5vw, 80px) !important;
 }
 body[data-page="about"] .about-inner { padding-bottom: clamp(40px, 6vh, 70px); }
 body[data-page="about"] .page--about { transform: translateY(0); }
