@@ -430,7 +430,9 @@ body.proj-detail-open .page--projects .page-tr {
   transition: transform 0.85s var(--ease);
   overflow-y: auto;
   will-change: transform;
+  display: flex; flex-direction: column;   /* lets the footer sit at the bottom */
 }
+.about-footer { margin-top: auto; }        /* push it to the bottom of the page */
 body[data-page="about"] .page--about { transform: translateY(0); }
 
 .about-inner {

@@ -1130,6 +1130,12 @@ function buildAccordPanel(key, inner) {
   inner.append(left, right);
 }
 
+/* Stamp the current year into the bio-page footer. */
+(() => {
+  const yr = document.getElementById('aboutFooterYear');
+  if (yr) yr.textContent = new Date().getFullYear();
+})();
+
 /* ── PROJECTS ACCORDION: click a strip → overlay slides up ──── */
 const projDetailEl = document.getElementById('projDetail');
 
