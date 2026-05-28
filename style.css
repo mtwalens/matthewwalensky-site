@@ -585,16 +585,47 @@ body[data-page="about"] .page--about { transform: translateY(0); }
   transform: scale(1.04);
 }
 
-/* DETAIL OVERLAY — slides UP from below when a strip is clicked */
+/* DETAIL OVERLAY — IRIS reveal from the clicked tile.
+   JS owns the inline clip-path values (initial = strip rect → open = inset(0)).
+   CSS only owns visibility + the transition timing. */
 .proj-detail-overlay {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  z-index: 8; height: 0;
+  position: absolute; inset: 0;
+  z-index: 8;
   background: var(--bg);
+  pointer-events: none;
+  visibility: hidden;
   overflow: hidden;
-  transition: height 0.7s var(--ease);
+  will-change: clip-path;
+  transform: translateZ(0);   /* promote to its own GPU layer for smoothness */
 }
-.proj-detail-overlay.open { height: 100%; overflow-y: auto; }
-.proj-detail-overlay.open .proj-detail-inner { opacity: 1; transform: translateY(0); }
+.proj-detail-overlay.armed { visibility: visible; }
+.proj-detail-overlay.open {
+  pointer-events: auto;
+  visibility: visible;
+  overflow-y: auto;
+}
+
+/* Content fades IN as the iris opens (delayed so the reveal leads).
+   On close we DON'T fade the inner content — instead the whole overlay
+   fades, which keeps the visual locked together as it shrinks back. */
+.proj-detail-overlay .proj-detail-inner,
+.proj-detail-overlay .proj-detail-close,
+.proj-detail-overlay .proj-detail-footer,
+.proj-detail-overlay .slide-back {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.proj-detail-overlay.open .proj-detail-inner,
+.proj-detail-overlay.open .proj-detail-close,
+.proj-detail-overlay.open .proj-detail-footer,
+.proj-detail-overlay.open .slide-back {
+  opacity: 1;
+  transition: opacity 0.5s ease 0.18s;   /* delay so iris reveals first */
+}
+/* Overall overlay can fade — JS toggles inline opacity during close. */
+.proj-detail-overlay {
+  transition: opacity 0.35s ease;
+}
 
 .proj-detail-close {
   position: absolute; top: clamp(20px, 3vh, 32px); right: clamp(24px, 4vw, 48px);
@@ -614,8 +645,8 @@ body[data-page="about"] .page--about { transform: translateY(0); }
   grid-template-columns: minmax(260px, 32%) 1fr;
   gap: clamp(32px, 4vw, 72px);
   padding: clamp(70px, 8vh, 100px) clamp(40px, 5vw, 80px) clamp(32px, 5vh, 60px);
-  opacity: 0; transform: translateY(20px);
-  transition: opacity 0.5s 0.2s var(--ease-out), transform 0.5s 0.2s var(--ease-out);
+  /* No translate/fade — the clip-path iris does the reveal. */
+  opacity: 1; transform: none;
   align-items: center;     /* vertically center both columns (Days Until College) */
   min-height: 100%;
 }

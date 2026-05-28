@@ -1360,24 +1360,74 @@ function buildProjectDetail(key) {
   projDetailEl.appendChild(buildProjectFooter());
 }
 
-function openProjectDetail(key) {
-  document.querySelectorAll('.proj-strip').forEach(s => {
-    s.classList.toggle('active', s.dataset.project === key);
-  });
-  buildProjectDetail(key);
-  /* Class on body so corner buttons can hide reliably (no :has() dependency) */
-  document.body.classList.add('proj-detail-open');
-  requestAnimationFrame(() => projDetailEl.classList.add('open'));
+/* IRIS reveal from the clicked tile.
+   The overlay's clip-path is driven inline (no CSS vars) so the value is
+   guaranteed to be a clean inset() that browsers can interpolate.
+   We do NOT add .active to the strip — that would change its flex value
+   mid-animation and the iris would chase a moving rect. */
+let _lastOpenStrip = null;
+const IRIS_MS = 520;
+const IRIS_EASE = 'cubic-bezier(.22, .68, .26, 1)';
+
+function clipFromStripRect(strip) {
+  const page = projDetailEl.parentElement;
+  const pr = page.getBoundingClientRect();
+  const sr = strip.getBoundingClientRect();
+  const t = Math.max(0, sr.top    - pr.top);
+  const l = Math.max(0, sr.left   - pr.left);
+  const r = Math.max(0, pr.right  - sr.right);
+  const b = Math.max(0, pr.bottom - sr.bottom);
+  return `inset(${t}px ${r}px ${b}px ${l}px)`;
 }
+
+function openProjectDetail(key, originStrip) {
+  const strip = originStrip || document.querySelector(`.proj-strip[data-project="${key}"]`);
+  _lastOpenStrip = strip;
+
+  buildProjectDetail(key);
+
+  /* 1. Seed the closed clip-path INLINE (no transition yet) so we start at
+        the strip's rect. 2. Force a sync layout. 3. Next frame, enable the
+        transition and set the open clip-path → smooth iris reveal. */
+  projDetailEl.style.transition = 'none';
+  projDetailEl.style.clipPath = clipFromStripRect(strip);
+  projDetailEl.style.opacity = '1';
+  projDetailEl.classList.add('armed');
+  document.body.classList.add('proj-detail-open');
+  // eslint-disable-next-line no-unused-expressions
+  projDetailEl.offsetHeight;
+
+  requestAnimationFrame(() => {
+    projDetailEl.style.transition = `clip-path ${IRIS_MS}ms ${IRIS_EASE}, opacity ${IRIS_MS}ms ease`;
+    projDetailEl.style.clipPath   = 'inset(0px 0px 0px 0px)';
+    projDetailEl.classList.add('open');
+  });
+}
+
 function closeProjectDetail() {
-  document.querySelectorAll('.proj-strip').forEach(s => s.classList.remove('active'));
-  projDetailEl.classList.remove('open');
+  if (!_lastOpenStrip) return;
+  /* Two-phase close: opacity stays 1 while the iris shrinks back to the
+     tile, then only the last ~120ms fades out — so you never see other
+     tiles through a transparent open window. */
+  const fadeMs   = 140;
+  const fadeWait = IRIS_MS - fadeMs;   /* delay opacity until the iris is at the tile */
+  projDetailEl.style.transition =
+    `clip-path ${IRIS_MS}ms ${IRIS_EASE}, opacity ${fadeMs}ms ease ${fadeWait}ms`;
+  projDetailEl.style.clipPath   = clipFromStripRect(_lastOpenStrip);
+  projDetailEl.style.opacity    = '0';
   document.body.classList.remove('proj-detail-open');
-  setTimeout(() => { if (!projDetailEl.classList.contains('open')) projDetailEl.innerHTML = ''; }, 700);
+  setTimeout(() => {
+    projDetailEl.classList.remove('open');
+    projDetailEl.classList.remove('armed');
+    projDetailEl.innerHTML = '';
+    projDetailEl.style.removeProperty('clip-path');
+    projDetailEl.style.removeProperty('transition');
+    projDetailEl.style.removeProperty('opacity');
+  }, IRIS_MS + 40);
 }
 
 document.querySelectorAll('.proj-strip').forEach(strip => {
-  strip.addEventListener('click', () => openProjectDetail(strip.dataset.project));
+  strip.addEventListener('click', () => openProjectDetail(strip.dataset.project, strip));
 });
 
 /* Esc closes the project detail overlay (parity with other modals) */
