@@ -351,13 +351,16 @@ body.proj-detail-open .page--projects .page-tr {
 .stills-content .gallery-panel--stills {
   display: block !important;
   height: 100% !important;
-  width: max-content !important;
+  /* Hugs the grid, which sizeStillsGrid() gives an explicit width. */
+  width: fit-content !important;
 }
 .stills-content .gallery-grid {
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
-  width: max-content !important;
+  /* Width is set explicitly by sizeStillsGrid(); max-content is circular
+     against the height-derived item widths. */
+  width: auto;
   height: calc(100vh - 200px) !important;
   columns: unset !important;
   grid-template-columns: unset !important;
@@ -373,21 +376,25 @@ body.proj-detail-open .page--projects .page-tr {
   min-height: 0 !important;
   align-items: stretch !important;
 }
+/* Each tile's width comes from its aspect-ratio (set inline from the
+   manifest's w/h) multiplied by the row height. Letting width be driven by
+   the image's *natural* size instead made the grid's max-content far wider
+   than the photos actually rendered, leaving a long empty scroll runway. */
 .stills-content .gallery-item {
   display: block !important;
   flex: 0 0 auto !important;
   height: 100% !important;
   width: auto !important;
-  min-width: 160px !important;
+  min-width: 0 !important;
   margin: 0 !important;
-  aspect-ratio: auto !important;
   break-inside: auto !important;
+  overflow: hidden;
 }
 .stills-content .gallery-item img {
-  width: auto !important;
+  width: 100% !important;
   height: 100% !important;
   display: block !important;
-  object-fit: unset !important;
+  object-fit: cover !important;
 }
 
 @media (max-width: 720px) {
@@ -810,6 +817,208 @@ body[data-page="about"] .page--about { transform: translateY(0); }
 .proj-detail-media .video-grid {
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+}
+
+/* ── ADMIN: Arrange overlay ─────────────────────────────────── */
+.stills-arrange-btn {
+  display: none;                       /* admin-mode only */
+  margin-top: 22px;
+  padding: 9px 14px;
+  background: none;
+  border: 1px solid rgba(240,230,208,0.25);
+  color: var(--warm-white);
+  font-family: 'Inter Tight', sans-serif; font-weight: 700;
+  font-size: 0.55rem; letter-spacing: 0.22em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+body.admin-mode .stills-arrange-btn { display: block; }
+.stills-arrange-btn:hover { background: rgba(240,230,208,0.1); border-color: var(--gold); }
+
+.arrange {
+  position: fixed; inset: 0; z-index: 600;
+  background: var(--bg);
+  display: none; flex-direction: column;
+  cursor: auto;
+}
+.arrange.open { display: flex; }
+.arrange * { cursor: auto; }
+
+.arrange-bar {
+  flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px;
+  padding: 14px clamp(16px, 3vw, 32px);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.arrange-bar-left, .arrange-bar-right { display: flex; align-items: center; gap: 10px; }
+.arrange-title {
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: 1.1rem; color: var(--warm-white);
+}
+.arrange-cat {
+  background: var(--bg); color: var(--warm-white);
+  border: 1px solid var(--border);
+  padding: 7px 10px;
+  font-family: 'Inter Tight', sans-serif; font-size: 0.7rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer;
+}
+.arrange-status {
+  flex: 1 1 auto; text-align: center;
+  font-family: 'Inter Tight', sans-serif; font-weight: 500;
+  font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+.arrange-status.is-active { color: var(--gold); }
+
+.arrange-btn {
+  background: none; border: 1px solid rgba(240,230,208,0.25);
+  color: var(--warm-white);
+  padding: 8px 14px;
+  font-family: 'Inter Tight', sans-serif; font-weight: 700;
+  font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+.arrange-btn:hover:not(:disabled) { background: rgba(240,230,208,0.1); border-color: var(--gold); }
+.arrange-btn:disabled { opacity: 0.32; cursor: default; }
+.arrange-btn--primary {
+  background: var(--warm-white); color: var(--bg); border-color: var(--warm-white);
+}
+.arrange-btn--primary:hover:not(:disabled) { background: var(--gold); border-color: var(--gold); }
+
+.arrange-grid {
+  flex: 1 1 auto; overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 10px;
+  padding: clamp(14px, 2.5vw, 28px);
+  align-content: start;
+}
+.arrange-item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--surface);
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+.arrange-item img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  pointer-events: none;                /* clicks land on the tile itself */
+  transition: filter 0.2s ease;
+}
+.arrange-item:hover { border-color: rgba(240,230,208,0.45); }
+.arrange-item:hover img { filter: brightness(1.08); }
+
+/* The photo currently "in hand" */
+.arrange-item.is-picked {
+  border-color: var(--gold);
+  transform: scale(0.9);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.5), 0 10px 26px rgba(0,0,0,0.55);
+}
+.arrange-item.is-picked img { filter: brightness(1.15) saturate(1.1); }
+/* Everything else invites a click while a photo is held */
+.arrange-grid:has(.is-picked) .arrange-item:not(.is-picked):hover {
+  border-color: var(--gold);
+  transform: scale(1.04);
+}
+.arrange-item.is-dragging { opacity: 0.35; }
+.arrange-item.is-drop-target { border-color: var(--gold); transform: scale(1.04); }
+
+.arrange-num {
+  position: absolute; left: 5px; bottom: 5px;
+  min-width: 20px; padding: 2px 5px;
+  background: rgba(13,11,9,0.75);
+  color: var(--warm-white);
+  font-family: 'Inter Tight', sans-serif; font-weight: 700;
+  font-size: 0.55rem; letter-spacing: 0.06em;
+  text-align: center;
+}
+.arrange-star {
+  position: absolute; top: 5px; right: 6px;
+  color: var(--gold); font-size: 0.8rem;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 780px) {
+  .arrange-bar { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
+  .arrange-status { order: 3; flex: 1 0 100%; text-align: left; }
+  .arrange-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+}
+
+/* ── ADMIN: featured star on each photo ─────────────────────── */
+.gallery-star {
+  position: absolute; top: 6px; right: 6px; z-index: 4;
+  width: 30px; height: 30px;
+  display: none;                       /* admin-mode only, below */
+  align-items: center; justify-content: center;
+  background: rgba(13,11,9,0.62);
+  border: 1px solid rgba(240,230,208,0.22);
+  border-radius: 50%;
+  color: rgba(240,230,208,0.75);
+  font-size: 0.95rem; line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+body.admin-mode .gallery-star { display: flex; }
+.gallery-star:hover { background: rgba(13,11,9,0.9); transform: scale(1.12); }
+.gallery-star.is-featured {
+  color: var(--gold);
+  border-color: var(--gold);
+  background: rgba(13,11,9,0.82);
+}
+
+/* ── RELATED WORK (project → stills hand-off) ──────────────── */
+.proj-related {
+  margin: clamp(40px, 6vh, 72px) clamp(40px, 5vw, 80px) 0;
+  padding-top: clamp(24px, 3vh, 36px);
+  border-top: 1px solid var(--border);
+}
+.proj-related-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; margin-bottom: 18px;
+}
+.proj-related-eyebrow {
+  font-family: 'Inter Tight', sans-serif; font-weight: 500;
+  font-size: 0.55rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--muted);
+}
+.proj-related-link {
+  background: none; border: none; cursor: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--warm-white);
+  font-family: 'Oswald', sans-serif; font-weight: 400;
+  font-size: clamp(1rem, 1.6vw, 1.3rem); text-transform: uppercase;
+  transition: color 0.2s ease, gap 0.2s ease;
+}
+.proj-related-link svg { width: 15px; height: 15px; }
+.proj-related-link:hover { color: var(--gold); gap: 13px; }
+
+.proj-related-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.proj-related-item {
+  position: relative; overflow: hidden;
+  background: none; border: none; padding: 0; cursor: none;
+  aspect-ratio: 4 / 3;
+}
+.proj-related-item img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: brightness(0.82) saturate(0.95);
+  transition: transform 0.6s var(--ease-out), filter 0.35s ease;
+}
+.proj-related-item:hover img { transform: scale(1.06); filter: brightness(1) saturate(1); }
+
+@media (max-width: 780px) {
+  .proj-related { margin: 32px 18px 0 !important; }
+  .proj-related-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .proj-related-head { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
 
 /* Project detail FOOTER (appears at the bottom of each project page only —
@@ -2126,6 +2335,47 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
 }
 .lightbox-close:hover { color: var(--warm-white); }
 
+/* Leave room for the caption bar under the image. */
+.lightbox img { margin-bottom: 34px; }
+
+/* Prev / next arrows — sit against the left and right edges. */
+.lightbox-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 2;
+  background: none; border: none; cursor: none;
+  color: rgba(240,230,208,0.5);
+  padding: 18px 14px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.lightbox-nav svg { width: 30px; height: 30px; display: block; }
+.lightbox-nav:hover { color: var(--warm-white); }
+.lightbox-nav[hidden] { display: none; }
+.lightbox-nav--prev { left: clamp(6px, 2vw, 28px); }
+.lightbox-nav--next { right: clamp(6px, 2vw, 28px); }
+.lightbox-nav--prev:hover { transform: translateY(-50%) translateX(-3px); }
+.lightbox-nav--next:hover { transform: translateY(-50%) translateX(3px); }
+
+/* Caption + position counter along the bottom. */
+.lightbox-meta {
+  position: absolute; left: 0; right: 0; bottom: 18px;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  padding: 0 clamp(48px, 8vw, 96px);
+  pointer-events: none;
+  font-family: 'Inter Tight', sans-serif; font-weight: 500;
+  font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+.lightbox-caption.is-empty { display: none; }
+.lightbox-count { opacity: 0.65; white-space: nowrap; }
+
+/* Touch devices: arrows are bigger targets, swipe also works. */
+@media (hover: none), (pointer: coarse) {
+  .lightbox-nav { padding: 22px 10px; }
+  .lightbox-nav svg { width: 26px; height: 26px; }
+  .lightbox-meta { font-size: 0.55rem; bottom: 14px; }
+}
+
 /* ── SCROLLBAR / SELECTION ──────────────────────────────────── */
 ::-webkit-scrollbar { width: 3px; background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); }
@@ -2229,9 +2479,9 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
     transition: filter 0.3s ease;
     z-index: 0;
   }
-  .hero-word--left::after   { background-image: url('images/projects/days-until-college-bts.jpg'); }
+  .hero-word--left::after   { background-image: url('images/projects/_web/days-until-college-bts.jpg'); }
   .hero-word--center::after { background-image: url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1500w'); }
-  .hero-word--right::after  { background-image: url('images/gallery/environmental/DSCF2774.jpg'); }
+  .hero-word--right::after  { background-image: url('images/gallery/_web/wildlife/full/DSCF2774.jpg'); }
   .hero-word:active::after  { filter: brightness(0.7) saturate(1); }
   .hero-word + .hero-word::before { display: none; }   /* hide vertical dividers */
   /* Force the label to sit at the exact vertical + horizontal center of its card. */

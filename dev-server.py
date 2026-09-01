@@ -47,11 +47,69 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     manifest = json.loads(MANIFEST.read_text())
                 except json.JSONDecodeError:
                     pass
-            manifest[category] = paths
+
+            if category == "featured":
+                # Featured isn't a folder: the photos live in their own
+                # categories and this is purely the order they appear in.
+                manifest["_featuredOrder"] = paths
+            else:
+                # Entries carry dimensions and the featured flag, so reorder
+                # the existing objects rather than replacing them with bare
+                # paths — otherwise reordering would wipe that metadata.
+                existing = manifest.get(category, [])
+                by_path = {
+                    (e["p"] if isinstance(e, dict) else e): e
+                    for e in existing
+                }
+                manifest[category] = [by_path.get(p, {"p": p}) for p in paths]
             MANIFEST.write_text(json.dumps(manifest, indent=2))
 
             print(f"[admin] saved {len(paths)} paths for '{category}' → manifest.json")
             self._json(200, {"ok": True, "category": category, "count": len(paths)})
+            return
+
+        if self.path == "/api/save-featured":
+            length = int(self.headers.get("Content-Length", "0"))
+            try:
+                payload = json.loads(self.rfile.read(length).decode("utf-8"))
+                path = payload["path"]
+                featured = bool(payload["featured"])
+            except Exception as e:
+                self._json(400, {"ok": False, "error": str(e)})
+                return
+
+            manifest = {}
+            if MANIFEST.exists():
+                try:
+                    manifest = json.loads(MANIFEST.read_text())
+                except json.JSONDecodeError:
+                    pass
+
+            found = False
+            for key, entries in manifest.items():
+                if key.startswith("_"):
+                    continue          # _featuredOrder is a list of paths
+                for entry in entries:
+                    if isinstance(entry, dict) and entry.get("p") == path:
+                        if featured:
+                            entry["feat"] = True
+                        else:
+                            entry.pop("feat", None)
+                        found = True
+            if not found:
+                self._json(404, {"ok": False, "error": f"not in manifest: {path}"})
+                return
+
+            MANIFEST.write_text(json.dumps(manifest, indent=2))
+            total = sum(
+                1
+                for key, entries in manifest.items()
+                if not key.startswith("_")
+                for e in entries
+                if isinstance(e, dict) and e.get("feat")
+            )
+            print(f"[admin] {'★' if featured else '☆'} {path}  ({total} featured)")
+            self._json(200, {"ok": True, "featured": featured, "total": total})
             return
 
         if self.path == "/api/save-captions":

@@ -23,3 +23,15 @@ venv/
 
 # Dev-server backups
 *.bak
+
+# Camera originals (10-35 MB each). The site never loads these — it serves the
+# web-sized copies under images/gallery/_web/, which ARE committed.
+# Regenerate derivatives after adding photos:  python3 generate-manifest.py
+# Keep these backed up outside git (Lightroom catalog / external drive).
+images/gallery/landscape/
+images/gallery/wildlife/
+images/gallery/sports/
+images/gallery/street/
+images/gallery/portrait/
+images/gallery/product/
+images/gallery/_originals-non-web/

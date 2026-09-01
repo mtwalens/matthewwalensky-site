@@ -57,9 +57,11 @@ window.addEventListener('popstate', e => {
   goToPage(page, { push: false });
 });
 
-/* Honor an existing hash on load (e.g. someone bookmarked /#stills) */
+/* Honor an existing hash on load (e.g. someone bookmarked /#stills, or was
+   sent a direct link to one photo: /#stills/wildlife/DSCF2774.jpg) */
 (function initRoute() {
-  const initial = (location.hash || '').replace('#', '') || 'home';
+  const hash = location.hash || '';
+  const initial = hash.replace('#', '').split('/')[0] || 'home';
   document.body.dataset.page = VALID_PAGES.has(initial) ? initial : 'home';
 })();
 
@@ -323,11 +325,31 @@ const BASE = 'images/gallery/';
 /* galleryData is populated at runtime from images/gallery/manifest.json.
    To refresh: drop photos into images/gallery/<category>/ and run:
      python3 generate-manifest.py
-   Categories map: environmental→nature, sports, product, street, portrait. */
-let galleryData = { nature: [], sports: [], product: [], street: [], portrait: [] };
+   Folder name == category key: landscape, wildlife, sports, street,
+   portrait, product.
+
+   Each entry is { p: "landscape/DSCF1234.jpg", w, h, feat? } where `p` is
+   the original's path — the stable id used by captions and ordering. The
+   images actually served are the web-sized derivatives under _web/. */
+let galleryData = { landscape: [], wildlife: [], sports: [], street: [], portrait: [], product: [] };
+
+/* Originals are 10-35 MB each, so the site never loads them directly:
+   the grid gets ~900px thumbs and the lightbox gets ~2400px versions. */
+function derivedSrc(path, size) {
+  const slash = path.indexOf('/');
+  const folder = path.slice(0, slash);
+  const stem = path.slice(slash + 1).replace(/\.[^.]+$/, '');
+  return `${BASE}_web/${folder}/${size}/${stem}.jpg`;
+}
+const thumbSrc = path => derivedSrc(path, 'thumb');
+const fullSrc  = path => derivedSrc(path, 'full');
+
+/* Accepts both the current object entries and the older plain-string
+   manifest, so a stale manifest.json still renders. */
+const entryPath = e => (typeof e === 'string' ? e : e.p);
 let galleryReady = false;
 
-/* Per-image captions, keyed by image path (e.g. "environmental/DSCF2774.jpg"). */
+/* Per-image captions, keyed by image path (e.g. "wildlife/DSCF2774.jpg"). */
 let galleryCaptions = {};
 fetch(BASE + 'captions.json', { cache: 'no-cache' })
   .then(r => r.ok ? r.json() : {})
@@ -342,7 +364,10 @@ async function loadGalleryManifest() {
     galleryReady = true;
     /* If the stills page is currently visible, re-render with fresh data. */
     if (document.body.dataset.page === 'stills' && typeof renderStills === 'function') {
-      renderStills(currentStillsCat || 'all');
+      /* A direct photo link takes priority — open that exact frame. */
+      if (!(location.hash.startsWith('#stills/') && openPhotoFromHash(location.hash))) {
+        renderStills(currentStillsCat || 'featured');
+      }
     }
     /* If a gallery-backed project (e.g. VIZION) is open, rebuild it now. */
     if (document.body.classList.contains('proj-detail-open')) {
@@ -416,6 +441,34 @@ async function saveAdminOrder(category, grid, btn) {
   }
 }
 
+/* Admin: flag/unflag a photo for the Featured tab. Writes to manifest.json
+   through the dev-server, and keeps the in-memory copy in sync so switching
+   to Featured reflects the change without a reload. */
+async function saveFeatured(path, featured) {
+  try {
+    const res = await fetch('/api/save-featured', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, featured }),
+    });
+    if (!res.ok) throw new Error('server returned ' + res.status);
+    const { total } = await res.json();
+
+    for (const entries of Object.values(galleryData)) {
+      const hit = entries.find(e => entryPath(e) === path);
+      if (hit) { if (featured) hit.feat = true; else delete hit.feat; }
+    }
+    /* Featured is derived, so force it to rebuild next time it's opened. */
+    const panel = document.getElementById('stills-panel-featured');
+    if (panel) { panel.remove(); }
+
+    flashAdminToast(`${featured ? '★ Added to' : '☆ Removed from'} Featured (${total} total)`);
+  } catch (e) {
+    console.warn('[admin] featured save failed:', e);
+    flashAdminToast('✗ Featured save failed — is dev-server.py running?');
+  }
+}
+
 /* Silent autosave for photo order: fires on drag-end, no UI. */
 async function autoSaveAdminOrder(category, grid) {
   const paths = [...grid.querySelectorAll('.gallery-item')].map(el => el.dataset.path);
@@ -460,7 +513,7 @@ async function autoSaveCaptions() {
     /* If the stills page is currently open, rebuild it so the new caption
        text is wired into the items. (Doesn't auto-show — still hover-only.) */
     if (document.body.dataset.page === 'stills' && typeof renderStills === 'function') {
-      renderStills(currentStillsCat || 'all');
+      renderStills(currentStillsCat || 'featured');
     }
   } catch (e) {
     console.warn('[admin] captions autosave failed:', e);
@@ -513,9 +566,15 @@ async function saveCaptions(btn) {
 
 /* Tag portrait gallery items with .tall so CSS spans them across 2 rows —
    gives the stills page a tight mosaic feel (no dead space). */
-function setGallerySpan(item) {
+function setGallerySpan(item, entry) {
   if (document.body.classList.contains('admin-mode')) {
     item.classList.remove('tall'); return;
+  }
+  /* Dimensions come from the manifest, so orientation is known before the
+     image loads — no reflow once it arrives. */
+  if (entry && entry.w && entry.h) {
+    item.classList.toggle('tall', entry.h > entry.w * 1.05);
+    return;
   }
   const img = item.querySelector('img');
   if (!img) return;
@@ -528,6 +587,50 @@ function setGallerySpan(item) {
   if (img.complete) tag(); else img.addEventListener('load', tag, { once: true });
 }
 
+/* Real photo categories — skips `product` (it lives under VIZION) and any
+   bookkeeping key like _featuredOrder. */
+function photoCategories() {
+  return Object.entries(galleryData)
+    .filter(([k]) => !k.startsWith('_') && k !== 'product');
+}
+
+/* Photos flagged "feat": true. If a custom Featured order has been saved
+   (via Arrange), that wins; otherwise they're interleaved so consecutive
+   frames come from different categories. Until anything is flagged, shows
+   an even spread of the library so the tab is never empty. */
+function collectFeatured() {
+  const cats = photoCategories();
+  const starred = cats.flatMap(([, v]) => v.filter(e => e && e.feat));
+
+  if (starred.length) {
+    const saved = galleryData._featuredOrder;
+    if (Array.isArray(saved) && saved.length) {
+      const byPath = new Map(starred.map(e => [entryPath(e), e]));
+      const ordered = saved.map(p => byPath.get(p)).filter(Boolean);
+      /* Anything starred since the order was saved goes on the end. */
+      const seen = new Set(ordered.map(entryPath));
+      return [...ordered, ...starred.filter(e => !seen.has(entryPath(e)))];
+    }
+    return interleave(cats.map(([, v]) => v.filter(e => e && e.feat)));
+  }
+
+  /* Nothing curated yet — take an even spread from each category. */
+  const PER_CATEGORY = 6;
+  return interleave(cats.map(([, v]) => {
+    const step = Math.max(1, Math.floor(v.length / PER_CATEGORY));
+    return v.filter((_, i) => i % step === 0).slice(0, PER_CATEGORY);
+  }));
+}
+
+function interleave(arrays) {
+  const out = [];
+  const maxLen = Math.max(...arrays.map(a => a.length), 0);
+  for (let i = 0; i < maxLen; i++) {
+    arrays.forEach(a => { if (a[i]) out.push(a[i]); });
+  }
+  return out;
+}
+
 function buildPanel(category, explicitPanel) {
   /* Use the explicit panel element when provided (avoids ID-lookup ambiguity
      when the same gallery category appears in multiple places — e.g.
@@ -536,43 +639,56 @@ function buildPanel(category, explicitPanel) {
   if (!panel || panel.dataset.built) return;
   panel.dataset.built = 'true';
 
-  let paths;
-  if (category === 'all') {
-    /* Interleave all categories for visual variety — but exclude `product`
-       since it now lives under the VIZION project. */
-    const arrays = Object.entries(galleryData)
-      .filter(([k]) => k !== 'product')
-      .map(([, v]) => v);
-    const maxLen = Math.max(...arrays.map(a => a.length));
-    paths = [];
+  let entries;
+  if (category === 'featured') {
+    /* The hand-picked set — photos flagged "feat": true in manifest.json.
+       Interleaved across categories so the opening view stays varied.
+       Falls back to a sample of everything if nothing's flagged yet. */
+    entries = collectFeatured();
+  } else if (category === 'all') {
+    /* Interleave all categories — but exclude `product`, which now lives
+       under the VIZION project rather than in Stills. */
+    const arrays = photoCategories().map(([, v]) => v);
+    const maxLen = Math.max(...arrays.map(a => a.length), 0);
+    entries = [];
     for (let i = 0; i < maxLen; i++) {
-      arrays.forEach(arr => { if (arr[i]) paths.push(arr[i]); });
+      arrays.forEach(arr => { if (arr[i]) entries.push(arr[i]); });
     }
   } else if (IS_ADMIN) {
     /* Admins see their in-progress order from localStorage. */
     const saved = localStorage.getItem('gallery_order_' + category);
-    paths = saved ? JSON.parse(saved) : galleryData[category];
+    const byPath = new Map((galleryData[category] || []).map(e => [entryPath(e), e]));
+    entries = saved
+      ? JSON.parse(saved).map(p => byPath.get(p) || { p }).filter(Boolean)
+      : (galleryData[category] || []);
   } else {
     /* Public always sees the canonical order from manifest.json. */
-    paths = galleryData[category];
+    entries = galleryData[category] || [];
   }
 
   const grid = document.createElement('div');
   grid.className = 'gallery-grid';
 
-  paths.forEach(path => {
+  entries.forEach(entry => {
+    const path = entryPath(entry);
     const item = document.createElement('div');
     item.className = 'gallery-item';
     item.dataset.path = path;
-    item.dataset.full = BASE + path;
-    if (IS_ADMIN) item.draggable = true;
+    item.dataset.full = fullSrc(path);
+    /* Not draggable: reordering lives in the Arrange overlay. */
 
     const img = document.createElement('img');
-    img.src = BASE + path;
+    img.src = thumbSrc(path);
     img.alt = '';
     img.loading = 'lazy';
+    img.decoding = 'async';
+    /* Intrinsic size lets the browser reserve space before the image loads. */
+    if (entry.w && entry.h) { img.width = entry.w; img.height = entry.h; }
+    /* Drives the tile's width in the filmstrip (see .gallery-item in CSS)
+       and reserves correct space in the mobile masonry. */
+    item.style.aspectRatio = entry.w && entry.h ? `${entry.w} / ${entry.h}` : '3 / 2';
     /* Tag portrait orientation for mosaic packing */
-    setGallerySpan(item);
+    setGallerySpan(item, entry);
 
     const overlay = document.createElement('div');
     overlay.className = 'gallery-overlay';
@@ -591,39 +707,38 @@ function buildPanel(category, explicitPanel) {
     }
 
     item.append(img, overlay, captionWrap);
+
+    /* Admin: a star in the corner toggles this photo into the Featured tab.
+       Writes straight to manifest.json via the dev-server. */
+    if (IS_ADMIN) {
+      const star = document.createElement('button');
+      star.className = 'gallery-star' + (entry.feat ? ' is-featured' : '');
+      star.title = entry.feat ? 'Remove from Featured' : 'Add to Featured';
+      star.textContent = entry.feat ? '★' : '☆';
+      star.addEventListener('click', async ev => {
+        ev.stopPropagation();          /* don't open the lightbox */
+        const next = !star.classList.contains('is-featured');
+        star.classList.toggle('is-featured', next);
+        star.textContent = next ? '★' : '☆';
+        star.title = next ? 'Remove from Featured' : 'Add to Featured';
+        entry.feat = next || undefined;
+        await saveFeatured(path, next);
+      });
+      item.appendChild(star);
+    }
+
     grid.appendChild(item);
 
-    item.addEventListener('click', () => openLightbox(item.dataset.full));
+    item.addEventListener('click', () => openLightbox(item.dataset.full, item));
   });
 
-  /* drag-to-reorder — admin only */
-  if (IS_ADMIN) {
-    grid.addEventListener('dragstart', e => {
-      dragSrc = e.target.closest('.gallery-item');
-      if (!dragSrc) return;
-      dragSrc.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-
-    grid.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      const target = e.target.closest('.gallery-item');
-      if (!target || target === dragSrc) return;
-      const rect = target.getBoundingClientRect();
-      const after = e.clientY > rect.top + rect.height / 2;
-      grid.insertBefore(dragSrc, after ? target.nextSibling : target);
-    });
-
-    grid.addEventListener('dragend', () => {
-      if (!dragSrc) return;
-      dragSrc.classList.remove('dragging');
-      saveOrder(category, grid);
-      /* Auto-save the new order silently — no inline Save button anymore. */
-      autoSaveAdminOrder(category, grid);
-      dragSrc = null;
-    });
-  }
+  /* Reordering happens in the Arrange overlay, not here.
+     Dragging inside this grid used to be possible but was broken two ways:
+     splitStillsIntoRows() moves items into .gallery-row wrappers, so
+     grid.insertBefore() threw on every dragover; and saving read DOM order,
+     which after the split is "all even-indexed, then all odd" — so a drop
+     silently scrambled the whole category. Arrange works on a flat list
+     and writes an order that matches what you see. */
 
   panel.appendChild(grid);
   addHoverCursor(panel.querySelectorAll('.gallery-item'));
@@ -631,7 +746,7 @@ function buildPanel(category, explicitPanel) {
 
 /* ── STILLS PAGE (inline gallery) ───────────────────────────── */
 const stillsContent = document.getElementById('stillsContent');
-let currentStillsCat = 'all';
+let currentStillsCat = 'featured';
 
 function renderStills(category) {
   if (!stillsContent) return;
@@ -661,11 +776,72 @@ function splitStillsIntoRows() {
   });
   grid.innerHTML = '';
   grid.append(row1, row2);
+  sizeStillsGrid();
 }
+
+/* Give the filmstrip an explicit width.
+
+   Leaving it to `width: max-content` is circular here: the grid is a column
+   of rows whose item widths come from aspect-ratio × row height, but the row
+   height depends on the grid. Browsers resolve that inconsistently — it came
+   out far too wide for landscape-heavy sets (a long empty scroll runway) and
+   too narrow for portrait-heavy ones (photos clipped off the end).
+
+   Each row's width is just the sum of its items plus the gaps, so measure it
+   and set it. */
+function sizeStillsGrid() {
+  const grid = stillsContent?.querySelector('.gallery-grid');
+  if (!grid) return;
+  const rows = [...grid.querySelectorAll('.gallery-row')];
+  if (!rows.length) return;
+
+  grid.style.width = 'auto';          /* release any previous value first */
+
+  const widest = Math.max(...rows.map(row => {
+    const kids = [...row.children];
+    if (!kids.length) return 0;
+    const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+    const total = kids.reduce((sum, k) => sum + k.getBoundingClientRect().width, 0);
+    return total + gap * (kids.length - 1);
+  }));
+
+  if (widest > 0) grid.style.width = Math.ceil(widest) + 'px';
+}
+
+/* Row height changes with the viewport, and item widths follow it. */
+let stillsResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(stillsResizeTimer);
+  stillsResizeTimer = setTimeout(sizeStillsGrid, 150);
+});
 
 function ensureStillsBuilt() {
   if (!stillsContent) return;
   if (!stillsContent.children.length) renderStills(currentStillsCat);
+}
+
+/* The desktop filmstrip scrolls sideways, but a mouse wheel and a trackpad
+   two-finger swipe are usually vertical — translate that into horizontal
+   movement so the gallery responds to the gesture people actually make.
+   Left untouched on the mobile layout, which genuinely scrolls vertically. */
+if (stillsContent) {
+  stillsContent.addEventListener('wheel', e => {
+    /* Mobile stills is a normal vertical column — leave it alone. */
+    if (window.matchMedia('(max-width: 780px)').matches) return;
+    /* Respect a deliberate horizontal gesture; only convert vertical ones. */
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+    const max = stillsContent.scrollWidth - stillsContent.clientWidth;
+    if (max <= 0) return;
+
+    /* Let the page do its thing once we've hit either end. */
+    const atStart = stillsContent.scrollLeft <= 0 && e.deltaY < 0;
+    const atEnd   = stillsContent.scrollLeft >= max - 1 && e.deltaY > 0;
+    if (atStart || atEnd) return;
+
+    e.preventDefault();
+    stillsContent.scrollLeft += e.deltaY;
+  }, { passive: false });
 }
 
 /* Wire filter buttons */
@@ -676,15 +852,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 /* If user visits #stills directly, build it on initial load too. */
 if (document.body.dataset.page === 'stills') ensureStillsBuilt();
 
-/* Vertical mouse-wheel scrolls the Stills horizontal filmstrip left/right.
-   Trackpad horizontal swipes pass through naturally; we only intercept when
-   the vertical delta dominates (i.e. mouse wheel or vertical trackpad). */
-stillsContent?.addEventListener('wheel', e => {
-  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-    e.preventDefault();
-    stillsContent.scrollLeft += e.deltaY;
-  }
-}, { passive: false });
+/* (The wheel → horizontal-scroll handler lives with the Stills code above.) */
 
 /* ── PROJECT DATA ───────────────────────────────────────────── */
 /*
@@ -769,7 +937,7 @@ const projects = {
     roles: ['Host', 'Senior Producer'],
     desc: 'A live USC student-produced morning show on Trojan Vision. As Senior Producer, oversaw the full production of the show. As Host of the Delish segment, led on-camera food and taste-test features across four episodes.',
     segmentLabel: 'Delish Segment',
-    img: 'images/projects/the-morning-brew-bts.jpeg',
+    img: 'images/projects/_web/the-morning-brew-bts.jpg',
     tabs: [
       {
         label: 'Cheap vs. Expensive',
@@ -816,7 +984,7 @@ const projects = {
       {
         title: 'VIZION',
         subtitle: 'Startup Photo Campaign',
-        cover: 'images/projects/VZN-11.jpg',
+        cover: 'images/projects/_web/VZN-11.jpg',
         gallery: 'product',
         desc: 'Brand photo campaign for VIZION — a startup eyewear company. Editorial product shots and identity-driven imagery shot across multiple sessions.',
       },
@@ -1163,6 +1331,86 @@ function openSlideGallery(slide) {
 
 /* Renders a footer at the bottom of any project detail panel. Only used on
    project detail overlays — NOT on the main projects strip page or stills. */
+/* Which Stills category each project leads into. Keeps someone who just
+   watched the Red Sox reel moving into the sports photography instead of
+   dead-ending at the bottom of the page. */
+const PROJECT_RELATED = {
+  redsox:    { cat: 'sports',    label: 'Sports Photography' },
+  usc:       { cat: 'sports',    label: 'Sports Photography' },
+  film:      { cat: 'portrait',  label: 'Portrait Work' },
+  brew:      { cat: 'portrait',  label: 'Portrait Work' },
+  freelance: { cat: 'street',    label: 'Street Photography' },
+};
+
+/* A "keep looking" band above the footer: a few real frames from the
+   related category, clickable straight into that gallery. */
+function buildRelatedWork(key) {
+  const rel = PROJECT_RELATED[key];
+  if (!rel) return null;
+  const pool = galleryData[rel.cat] || [];
+  if (pool.length < 3) return null;
+
+  /* Prefer featured frames, else spread across the category. */
+  const feat = pool.filter(e => e.feat);
+  const source = feat.length >= 4 ? feat : pool;
+  const step = Math.max(1, Math.floor(source.length / 4));
+  const picks = source.filter((_, i) => i % step === 0).slice(0, 4);
+
+  const section = document.createElement('section');
+  section.className = 'proj-related';
+  section.innerHTML = `
+    <div class="proj-related-head">
+      <span class="proj-related-eyebrow">Related</span>
+      <button class="proj-related-link" data-stills-cat="${rel.cat}">
+        ${rel.label}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9,5 16,12 9,19"/></svg>
+      </button>
+    </div>
+    <div class="proj-related-grid"></div>
+  `;
+
+  const grid = section.querySelector('.proj-related-grid');
+  picks.forEach(entry => {
+    const path = entryPath(entry);
+    const fig = document.createElement('button');
+    fig.className = 'proj-related-item';
+    fig.dataset.stillsCat = rel.cat;
+    fig.dataset.stillsPath = path;
+    const img = document.createElement('img');
+    img.src = thumbSrc(path);
+    img.alt = galleryCaptions[path] || '';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    if (entry.w && entry.h) { img.width = entry.w; img.height = entry.h; }
+    fig.appendChild(img);
+    grid.appendChild(fig);
+  });
+
+  return section;
+}
+
+/* Jump from a project into Stills — optionally straight to one photo. */
+document.addEventListener('click', e => {
+  const target = e.target.closest('[data-stills-cat]');
+  if (!target) return;
+  e.preventDefault();
+  closeProjectDetail();
+  goToPage('stills');
+  const { stillsCat, stillsPath } = target.dataset;
+  /* Let the page transition start before swapping the grid under it. */
+  setTimeout(() => {
+    renderStills(stillsCat);
+    if (stillsPath) {
+      requestAnimationFrame(() => {
+        const item = document.querySelector(
+          `.stills-content .gallery-item[data-path="${CSS.escape(stillsPath)}"]`
+        );
+        if (item) item.click();
+      });
+    }
+  }, 420);
+});
+
 function buildProjectFooter() {
   const footer = document.createElement('footer');
   footer.className = 'proj-detail-footer';
@@ -1331,6 +1579,8 @@ function buildProjectDetail(key) {
     right.appendChild(media);
     inner.append(text, right);
     projDetailEl.appendChild(inner);
+    const relatedSlideshow = buildRelatedWork(key);
+    if (relatedSlideshow) projDetailEl.appendChild(relatedSlideshow);
     projDetailEl.appendChild(buildProjectFooter());
     return;
   }
@@ -1363,6 +1613,8 @@ function buildProjectDetail(key) {
 
   inner.append(text, right);
   projDetailEl.appendChild(inner);
+  const related = buildRelatedWork(key);
+  if (related) projDetailEl.appendChild(related);
   projDetailEl.appendChild(buildProjectFooter());
 }
 
@@ -1443,27 +1695,408 @@ document.addEventListener('keydown', e => {
 
 /* (former nav dropdown handler removed — no nav in new layout) */
 
-/* ── LIGHTBOX ───────────────────────────────────────────────── */
-const lightbox      = document.getElementById('lightbox');
-const lightboxClose = document.getElementById('lightboxClose');
-const lightboxImg   = document.getElementById('lightboxImg');
+/* ── ARRANGE MODE (admin: reorder a category) ───────────────────
+   Dragging photos around a two-row horizontal filmstrip is fiddly, so
+   reordering happens here instead: a plain grid where you see everything
+   at once and move a photo by clicking it, then clicking its destination.
+   Dragging still works for anyone who prefers it. */
+const arrangeEl     = document.getElementById('arrangeOverlay');
+const arrangeGrid   = document.getElementById('arrangeGrid');
+const arrangeCatSel = document.getElementById('arrangeCat');
+const arrangeStatus = document.getElementById('arrangeStatus');
 
-function openLightbox(src) {
-  lightboxImg.src = src;
+const ARRANGE_CATEGORIES = ['featured', 'landscape', 'wildlife', 'sports', 'street', 'portrait', 'product'];
+
+let arrangeCat = null;
+let arrangeList = [];        /* working copy of the category's entries */
+let arrangePicked = null;    /* path of the photo currently "in hand" */
+let arrangeUndo = null;      /* snapshot for the Undo button */
+
+function openArrange(category) {
+  if (!IS_ADMIN || !arrangeEl) return;
+  arrangeCat = ARRANGE_CATEGORIES.includes(category) ? category : 'landscape';
+
+  arrangeCatSel.innerHTML = ARRANGE_CATEGORIES
+    .map(c => `<option value="${c}"${c === arrangeCat ? ' selected' : ''}>${c[0].toUpperCase() + c.slice(1)}</option>`)
+    .join('');
+
+  loadArrangeCategory(arrangeCat);
+  arrangeEl.classList.add('open');
+  arrangeEl.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeArrange() {
+  arrangeEl.classList.remove('open');
+  arrangeEl.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  arrangePicked = null;
+  /* Re-render the Stills grid so it reflects the new order. */
+  renderStills(currentStillsCat);
+}
+
+function loadArrangeCategory(category) {
+  arrangeCat = category;
+  /* Featured isn't a folder — it's whatever is starred, in its saved order. */
+  arrangeList = category === 'featured'
+    ? collectFeaturedStarredOnly()
+    : [...(galleryData[category] || [])];
+  arrangePicked = null;
+  arrangeUndo = null;
+  renderArrange();
+}
+
+/* The starred set in its current Featured order. Unlike collectFeatured()
+   this never falls back to an auto-spread — you can only arrange photos you
+   actually picked. */
+function collectFeaturedStarredOnly() {
+  const starred = photoCategories().flatMap(([, v]) => v.filter(e => e && e.feat));
+  const saved = galleryData._featuredOrder;
+  if (Array.isArray(saved) && saved.length) {
+    const byPath = new Map(starred.map(e => [entryPath(e), e]));
+    const ordered = saved.map(p => byPath.get(p)).filter(Boolean);
+    const seen = new Set(ordered.map(entryPath));
+    return [...ordered, ...starred.filter(e => !seen.has(entryPath(e)))];
+  }
+  return interleave(photoCategories().map(([, v]) => v.filter(e => e && e.feat)));
+}
+
+/* Full rebuild — only on open and category change. Picking a photo up or
+   moving one reuses the existing tiles instead, so the thumbnails never
+   reload and the grid doesn't flash. */
+function renderArrange() {
+  arrangeGrid.innerHTML = '';
+  arrangeList.forEach((entry, i) => {
+    const path = entryPath(entry);
+    const cell = document.createElement('div');
+    cell.className = 'arrange-item';
+    if (path === arrangePicked) cell.classList.add('is-picked');
+    cell.dataset.path = path;
+    cell.dataset.index = i;
+    cell.draggable = true;
+    cell.innerHTML = `
+      <img src="${thumbSrc(path)}" alt="" loading="lazy" decoding="async">
+      <span class="arrange-num">${i + 1}</span>
+      ${entry.feat ? '<span class="arrange-star">★</span>' : ''}
+    `;
+    arrangeGrid.appendChild(cell);
+  });
+  refreshArrangeChrome();
+}
+
+/* Re-label positions and sync each tile's index after a move. */
+function renumberArrange() {
+  [...arrangeGrid.children].forEach((cell, i) => {
+    cell.dataset.index = i;
+    const num = cell.querySelector('.arrange-num');
+    if (num) num.textContent = i + 1;
+    cell.classList.toggle('is-picked', cell.dataset.path === arrangePicked);
+  });
+  refreshArrangeChrome();
+}
+
+function refreshArrangeChrome() {
+  updateArrangeStatus();
+  document.getElementById('arrangeUndo').disabled = !arrangeUndo;
+  document.getElementById('arrangeFront').disabled = !arrangePicked;
+  document.getElementById('arrangeEnd').disabled = !arrangePicked;
+}
+
+function updateArrangeStatus() {
+  if (!arrangePicked) {
+    arrangeStatus.textContent =
+      `${arrangeList.length} photos — click one to pick it up`;
+    arrangeStatus.classList.remove('is-active');
+    return;
+  }
+  const pos = arrangeList.findIndex(e => entryPath(e) === arrangePicked) + 1;
+  arrangeStatus.textContent = `Holding #${pos} — click where it should go (Esc to cancel)`;
+  arrangeStatus.classList.add('is-active');
+}
+
+/* Move the held photo to `toIndex`, remembering the previous order so a
+   mis-click can be undone. */
+function arrangeMoveTo(toIndex, { keepHold = false } = {}) {
+  const from = arrangeList.findIndex(e => entryPath(e) === arrangePicked);
+  if (from === -1 || from === toIndex) { arrangePicked = null; renumberArrange(); return; }
+
+  arrangeUndo = [...arrangeList];
+  const [moved] = arrangeList.splice(from, 1);
+  arrangeList.splice(toIndex, 0, moved);
+
+  /* Move the existing tile rather than rebuilding the grid — keeps every
+     already-loaded thumbnail in place. The reference node is taken from the
+     list *after* the splice, so this is correct in both directions (using
+     the old index would be a no-op when moving forward by one). */
+  const cell = arrangeGrid.children[from];
+  if (cell) {
+    const nextEntry = arrangeList[toIndex + 1];
+    const ref = nextEntry
+      ? arrangeGrid.querySelector(`.arrange-item[data-path="${CSS.escape(entryPath(nextEntry))}"]`)
+      : null;
+    arrangeGrid.insertBefore(cell, ref);
+  }
+
+  if (!keepHold) arrangePicked = null;
+  renumberArrange();
+  saveArrange();
+}
+
+async function saveArrange() {
+  /* Featured stores just an order of paths; the photos themselves stay in
+     their own categories. */
+  if (arrangeCat === 'featured') galleryData._featuredOrder = arrangeList.map(entryPath);
+  else galleryData[arrangeCat] = [...arrangeList];
+  try {
+    const res = await fetch('/api/save-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: arrangeCat, paths: arrangeList.map(entryPath) }),
+    });
+    if (!res.ok) throw new Error('server returned ' + res.status);
+    flashAdminToast(`Saved ${arrangeCat} order`);
+  } catch (e) {
+    console.warn('[arrange] save failed:', e);
+    flashAdminToast('✗ Save failed — is dev-server.py running?');
+  }
+}
+
+if (arrangeEl) {
+  /* Click to pick up, click again to place. */
+  arrangeGrid.addEventListener('click', e => {
+    const cell = e.target.closest('.arrange-item');
+    if (!cell) return;
+    const path = cell.dataset.path;
+
+    if (!arrangePicked) {
+      arrangePicked = path;
+      renumberArrange();
+    } else if (path === arrangePicked) {
+      arrangePicked = null;          /* clicking it again puts it back down */
+      renumberArrange();
+    } else {
+      arrangeMoveTo(Number(cell.dataset.index));
+    }
+  });
+
+  /* Dragging, for anyone who prefers it. */
+  let dragPath = null;
+  arrangeGrid.addEventListener('dragstart', e => {
+    const cell = e.target.closest('.arrange-item');
+    if (!cell) return;
+    dragPath = cell.dataset.path;
+    cell.classList.add('is-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  arrangeGrid.addEventListener('dragover', e => {
+    if (!dragPath) return;
+    e.preventDefault();
+    const cell = e.target.closest('.arrange-item');
+    arrangeGrid.querySelectorAll('.is-drop-target')
+      .forEach(c => c.classList.remove('is-drop-target'));
+    if (cell && cell.dataset.path !== dragPath) cell.classList.add('is-drop-target');
+  });
+  arrangeGrid.addEventListener('drop', e => {
+    e.preventDefault();
+    const cell = e.target.closest('.arrange-item');
+    if (cell && dragPath && cell.dataset.path !== dragPath) {
+      arrangePicked = dragPath;
+      arrangeMoveTo(Number(cell.dataset.index));
+    }
+    dragPath = null;
+  });
+  arrangeGrid.addEventListener('dragend', () => {
+    arrangeGrid.querySelectorAll('.is-dragging, .is-drop-target')
+      .forEach(c => c.classList.remove('is-dragging', 'is-drop-target'));
+    dragPath = null;
+  });
+
+  arrangeCatSel.addEventListener('change', () => loadArrangeCategory(arrangeCatSel.value));
+  document.getElementById('arrangeDone').addEventListener('click', closeArrange);
+
+  document.getElementById('arrangeFront').addEventListener('click', () => {
+    if (arrangePicked) arrangeMoveTo(0);
+  });
+  document.getElementById('arrangeEnd').addEventListener('click', () => {
+    if (arrangePicked) arrangeMoveTo(arrangeList.length - 1);
+  });
+  document.getElementById('arrangeUndo').addEventListener('click', () => {
+    if (!arrangeUndo) return;
+    arrangeList = arrangeUndo;
+    arrangeUndo = null;
+    arrangePicked = null;
+    renderArrange();
+    saveArrange();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!arrangeEl.classList.contains('open')) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (arrangePicked) { arrangePicked = null; renumberArrange(); }
+      else closeArrange();
+      return;
+    }
+    /* Nudge the held photo one slot at a time; it stays in hand so you can
+       keep tapping to walk it across the grid. */
+    if (!arrangePicked) return;
+    const at = arrangeList.findIndex(en => entryPath(en) === arrangePicked);
+    if (e.key === 'ArrowRight' && at < arrangeList.length - 1) {
+      e.preventDefault(); arrangeMoveTo(at + 1, { keepHold: true });
+    }
+    if (e.key === 'ArrowLeft' && at > 0) {
+      e.preventDefault(); arrangeMoveTo(at - 1, { keepHold: true });
+    }
+  });
+}
+
+const stillsArrangeBtn = document.getElementById('stillsArrangeBtn');
+if (stillsArrangeBtn) {
+  stillsArrangeBtn.addEventListener('click', () => openArrange(currentStillsCat));
+}
+
+/* ── LIGHTBOX ───────────────────────────────────────────────── */
+const lightbox        = document.getElementById('lightbox');
+const lightboxClose   = document.getElementById('lightboxClose');
+const lightboxImg     = document.getElementById('lightboxImg');
+const lightboxPrev    = document.getElementById('lightboxPrev');
+const lightboxNext    = document.getElementById('lightboxNext');
+const lightboxCaption = document.getElementById('lightboxCaption');
+const lightboxCount   = document.getElementById('lightboxCount');
+
+/* The set of photos the lightbox can page through, captured when it opens
+   from whichever grid was clicked — so it always matches the visible
+   category (and any admin re-ordering) without extra bookkeeping. */
+let lbItems = [];
+let lbIndex = 0;
+
+function showLightboxAt(i, { push = true } = {}) {
+  if (!lbItems.length) return;
+  /* Wrap around at both ends. */
+  lbIndex = (i + lbItems.length) % lbItems.length;
+  const item = lbItems[lbIndex];
+  lightboxImg.src = item.dataset.full;
+  lightboxImg.alt = galleryCaptions[item.dataset.path] || '';
+
+  /* Put the photo in the URL so a single frame can be linked directly. */
+  if (push) {
+    const url = `#stills/${item.dataset.path}`;
+    if (location.hash !== url) history.replaceState({ page: 'stills' }, '', url);
+  }
+
+  if (lightboxCaption) {
+    const text = galleryCaptions[item.dataset.path] || '';
+    lightboxCaption.textContent = text;
+    lightboxCaption.classList.toggle('is-empty', !text);
+  }
+  if (lightboxCount) {
+    lightboxCount.textContent = `${lbIndex + 1} / ${lbItems.length}`;
+  }
+  /* Only show arrows when there's somewhere to go. */
+  const multiple = lbItems.length > 1;
+  if (lightboxPrev) lightboxPrev.hidden = !multiple;
+  if (lightboxNext) lightboxNext.hidden = !multiple;
+
+  preloadNeighbours();
+}
+
+/* Warm the adjacent frames so arrowing through feels instant. */
+function preloadNeighbours() {
+  [lbIndex - 1, lbIndex + 1].forEach(i => {
+    const item = lbItems[(i + lbItems.length) % lbItems.length];
+    if (item) new Image().src = item.dataset.full;
+  });
+}
+
+function lightboxNav(step) { showLightboxAt(lbIndex + step); }
+
+function openLightbox(src, originItem) {
+  /* Build the sibling list from the grid that was actually clicked. */
+  const grid = originItem && originItem.closest('.gallery-grid');
+  lbItems = grid ? [...grid.querySelectorAll('.gallery-item')] : [];
+  const start = originItem ? lbItems.indexOf(originItem) : -1;
+
+  if (start === -1) {
+    /* Fallback: a lone image with no grid context. */
+    lbItems = [];
+    lightboxImg.src = src;
+    if (lightboxCaption) lightboxCaption.textContent = '';
+    if (lightboxCount)   lightboxCount.textContent = '';
+    if (lightboxPrev) lightboxPrev.hidden = true;
+    if (lightboxNext) lightboxNext.hidden = true;
+  } else {
+    showLightboxAt(start);
+  }
+
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+
 function closeLightbox() {
+  const wasOpen = lightbox.classList.contains('open');
   lightbox.classList.remove('open');
   document.body.style.overflow = '';
+  lbItems = [];
+  /* Drop the per-photo part of the URL, keeping the page itself. */
+  if (wasOpen && location.hash.startsWith('#stills/')) {
+    history.replaceState({ page: 'stills' }, '', '#stills');
+  }
+}
+
+/* Open a photo straight from a URL like #stills/wildlife/DSCF2774.jpg —
+   switches to the photo's own category so the arrow keys page through
+   its neighbours, exactly as if it had been clicked. */
+function openPhotoFromHash(hash) {
+  const path = hash.replace(/^#stills\//, '');
+  if (!path.includes('/')) return false;
+
+  const category = path.slice(0, path.indexOf('/'));
+  if (!galleryData[category]) return false;
+  if (!galleryData[category].some(e => entryPath(e) === path)) return false;
+
+  renderStills(category);
+  /* Wait for the grid to exist, then click through to the right frame. */
+  requestAnimationFrame(() => {
+    const item = document.querySelector(
+      `.stills-content .gallery-item[data-path="${CSS.escape(path)}"]`
+    );
+    if (item) item.click();
+  });
+  return true;
 }
 
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 
+if (lightboxPrev) lightboxPrev.addEventListener('click', e => { e.stopPropagation(); lightboxNav(-1); });
+if (lightboxNext) lightboxNext.addEventListener('click', e => { e.stopPropagation(); lightboxNav(1);  });
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeLightbox(); closeCF(); }
+  /* closeModal() belonged to a modal system that no longer exists; calling it
+     threw on every Escape, so neither the lightbox nor the contact form ever
+     closed via the keyboard. */
+  if (e.key === 'Escape') { closeLightbox(); closeCF(); return; }
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); lightboxNav(1);  }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); lightboxNav(-1); }
 });
+
+/* Swipe left/right on touch devices. */
+(() => {
+  let x0 = null, y0 = null;
+  lightbox.addEventListener('touchstart', e => {
+    x0 = e.changedTouches[0].clientX;
+    y0 = e.changedTouches[0].clientY;
+  }, { passive: true });
+  lightbox.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    const dy = e.changedTouches[0].clientY - y0;
+    /* Horizontal intent only, and far enough to be deliberate. */
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) lightboxNav(dx < 0 ? 1 : -1);
+    x0 = y0 = null;
+  }, { passive: true });
+})();
 
 /* ── CONTACT FORM ───────────────────────────────────────────── */
 const cfModal    = document.getElementById('cfModal');

@@ -6,7 +6,7 @@
   <title>Matthew Walensky</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=87">
+  <link rel="stylesheet" href="style.css?v=95">
 </head>
 <body class="loading" data-page="home">
 
@@ -32,7 +32,7 @@
 
       <div class="proj-accordion" id="projAccordion">
         <button class="proj-strip" data-project="film">
-          <div class="proj-strip-bg" style="background-image:url('images/projects/days-until-college-bts.jpg'), url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/3185d8c5-0532-451d-9165-e431b5791dac/IMG_3583.jpeg?format=1500w')"></div>
+          <div class="proj-strip-bg" style="background-image:url('images/projects/_web/days-until-college-bts.jpg'), url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/3185d8c5-0532-451d-9165-e431b5791dac/IMG_3583.jpeg?format=1500w')"></div>
           <div class="proj-strip-veil"></div>
           <div class="proj-strip-label">
             <span class="proj-strip-num">01</span>
@@ -41,7 +41,7 @@
           </div>
         </button>
         <button class="proj-strip" data-project="redsox">
-          <div class="proj-strip-bg" style="background-image:url('images/projects/brs-bts.jpeg')"></div>
+          <div class="proj-strip-bg" style="background-image:url('images/projects/_web/brs-bts.jpg')"></div>
           <div class="proj-strip-veil"></div>
           <div class="proj-strip-label">
             <span class="proj-strip-num">02</span>
@@ -50,7 +50,7 @@
           </div>
         </button>
         <button class="proj-strip" data-project="usc">
-          <div class="proj-strip-bg" style="background-image:url('images/projects/usc-athletics-bts.jpeg')"></div>
+          <div class="proj-strip-bg" style="background-image:url('images/projects/_web/usc-athletics-bts.jpg')"></div>
           <div class="proj-strip-veil"></div>
           <div class="proj-strip-label">
             <span class="proj-strip-num">03</span>
@@ -59,7 +59,7 @@
           </div>
         </button>
         <button class="proj-strip" data-project="brew">
-          <div class="proj-strip-bg" style="background-image:url('images/projects/the-morning-brew-bts.jpeg')"></div>
+          <div class="proj-strip-bg" style="background-image:url('images/projects/_web/the-morning-brew-bts.jpg')"></div>
           <div class="proj-strip-veil"></div>
           <div class="proj-strip-label">
             <span class="proj-strip-num">04</span>
@@ -88,9 +88,9 @@
       <div class="hero-bg-img" id="heroBgDefault" style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/8e978087-cefb-4568-a667-c5e4328a6c75/IMG_3636.JPEG?format=2500w')"></div>
 
       <!-- Directional preview layers (slide in from the matching side on hover) -->
-      <div class="hero-preview hero-preview--left"   data-for="projects" style="background-image:url('images/projects/days-until-college-bts.jpg')"></div>
+      <div class="hero-preview hero-preview--left"   data-for="projects" style="background-image:url('images/projects/_web/days-until-college-bts.jpg')"></div>
       <div class="hero-preview hero-preview--center" data-for="about"    style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1500w')"></div>
-      <div class="hero-preview hero-preview--right"  data-for="stills"   style="background-image:url('images/gallery/environmental/DSCF2774.jpg')"></div>
+      <div class="hero-preview hero-preview--right"  data-for="stills"   style="background-image:url('images/gallery/_web/wildlife/full/DSCF2774.jpg')"></div>
 
       <div class="hero-veil"></div>
 
@@ -135,12 +135,14 @@
             <h1 class="page-title">Stills</h1>
           </header>
           <nav class="filter-list">
-            <button class="filter-btn active" data-cat="all">All</button>
-            <button class="filter-btn" data-cat="nature">Nature</button>
+            <button class="filter-btn active" data-cat="featured">Featured</button>
+            <button class="filter-btn" data-cat="landscape">Landscape</button>
+            <button class="filter-btn" data-cat="wildlife">Wildlife</button>
             <button class="filter-btn" data-cat="sports">Sports</button>
             <button class="filter-btn" data-cat="street">Street</button>
             <button class="filter-btn" data-cat="portrait">Portrait</button>
           </nav>
+          <button class="stills-arrange-btn" id="stillsArrangeBtn">⇅ Arrange photos</button>
         </aside>
         <div class="stills-content" id="stillsContent">
           <!-- gallery grid is built by JS into here -->
@@ -225,6 +227,24 @@
   <div class="modal-backdrop" id="modalBackdrop"></div>
 
   <!-- ── ADMIN PANEL (visible only when ?admin=1) ── -->
+  <!-- ── ARRANGE OVERLAY (admin: reorder photos) ── -->
+  <div class="arrange" id="arrangeOverlay" aria-hidden="true">
+    <header class="arrange-bar">
+      <div class="arrange-bar-left">
+        <span class="arrange-title">Arrange</span>
+        <select class="arrange-cat" id="arrangeCat" aria-label="Category"></select>
+      </div>
+      <div class="arrange-status" id="arrangeStatus">Click a photo to pick it up</div>
+      <div class="arrange-bar-right">
+        <button class="arrange-btn" id="arrangeFront" disabled>To front</button>
+        <button class="arrange-btn" id="arrangeEnd" disabled>To end</button>
+        <button class="arrange-btn arrange-btn--ghost" id="arrangeUndo" disabled>Undo</button>
+        <button class="arrange-btn arrange-btn--primary" id="arrangeDone">Done</button>
+      </div>
+    </header>
+    <div class="arrange-grid" id="arrangeGrid"></div>
+  </div>
+
   <div class="admin-panel" id="adminPanel" aria-hidden="true">
     <div class="admin-panel-inner">
       <header class="admin-header">
@@ -251,7 +271,7 @@
           <div id="adminVideoBrowser"></div>
         </section>
         <section class="admin-section" data-section="photos">
-          <p class="admin-note">Add or edit photo captions. Saves automatically. To reorder photos visually, open the Stills page (drag-and-drop auto-saves).</p>
+          <p class="admin-note">Add or edit photo captions. Saves automatically. To reorder photos, open the Stills page and click <strong>⇅ Arrange photos</strong>.</p>
           <div id="adminCaptionBrowser"></div>
         </section>
         <section class="admin-section" data-section="help">
@@ -262,7 +282,8 @@
           <h3>Videos</h3>
           <p>Pick a project then a tab to see each video's title in editable form, drag to reorder, then save.</p>
           <h3>Photos</h3>
-          <p>Use the shortcut buttons to jump to a category. Drag thumbnails to reorder. Click <strong>Save order → manifest.json</strong>.</p>
+          <p><strong>Reorder:</strong> on the Stills page click <strong>⇅ Arrange photos</strong>. Click a photo to pick it up, then click where it should go. Use <em>To front</em> / <em>To end</em> for big jumps, arrow keys to nudge one slot, and <em>Undo</em> to take back the last move. Every move saves automatically.</p>
+          <p><strong>Featured:</strong> click the ☆ in a photo's corner to add it to the Featured tab; click again to remove.</p>
           <h3>Adding new media</h3>
           <p><strong>Photos:</strong> drop into <code>images/gallery/&lt;cat&gt;/</code>, run <code>python3 generate-manifest.py</code>.<br>
           <strong>Videos:</strong> drop MP4s into <code>videos/&lt;project&gt;/&lt;tab&gt;/</code> or paste URLs into <code>_links.txt</code> in that folder, then run <code>python3 generate-videos.py</code>.</p>
@@ -275,7 +296,17 @@
   <!-- ── LIGHTBOX ── -->
   <div class="lightbox" id="lightbox">
     <button class="lightbox-close" id="lightboxClose">✕</button>
+    <button class="lightbox-nav lightbox-nav--prev" id="lightboxPrev" aria-label="Previous photo" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15,4 7,12 15,20"/></svg>
+    </button>
     <img id="lightboxImg" src="" alt=""/>
+    <button class="lightbox-nav lightbox-nav--next" id="lightboxNext" aria-label="Next photo" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9,4 17,12 9,20"/></svg>
+    </button>
+    <div class="lightbox-meta">
+      <span class="lightbox-caption" id="lightboxCaption"></span>
+      <span class="lightbox-count" id="lightboxCount"></span>
+    </div>
   </div>
 
   <!-- ── CONTACT FORM MODAL ── -->
@@ -314,6 +345,6 @@
   </div>
   <div class="cf-backdrop" id="cfBackdrop"></div>
 
-  <script src="script.js?v=82"></script>
+  <script src="script.js?v=95"></script>
 </body>
 </html>
