@@ -48,8 +48,8 @@ FULL_PX,  FULL_Q  = 2400, 82
 # Map folder name -> gallery key shown on the site.
 # The order here is the order the tabs appear on the Stills page.
 CATEGORY_MAP = {
-    "landscape": "landscape",
     "wildlife":  "wildlife",
+    "landscape": "landscape",
     "sports":    "sports",
     "street":    "street",
     "portrait":  "portrait",

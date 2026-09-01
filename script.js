@@ -1705,7 +1705,7 @@ const arrangeGrid   = document.getElementById('arrangeGrid');
 const arrangeCatSel = document.getElementById('arrangeCat');
 const arrangeStatus = document.getElementById('arrangeStatus');
 
-const ARRANGE_CATEGORIES = ['featured', 'landscape', 'wildlife', 'sports', 'street', 'portrait', 'product'];
+const ARRANGE_CATEGORIES = ['featured', 'wildlife', 'landscape', 'sports', 'street', 'portrait', 'product'];
 
 let arrangeCat = null;
 let arrangeList = [];        /* working copy of the category's entries */
