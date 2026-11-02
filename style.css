@@ -188,6 +188,72 @@ body[data-page="stills"]   .app { transform: translateX(-200vw); }
   pointer-events: none;
 }
 
+/* What / where, directly under the name. Quiet enough not to compete with
+   the hero, specific enough that a first-time visitor knows the role. */
+.home-tagline {
+  position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  margin: 0;
+  padding: calc(clamp(36px, 5vh, 60px) + clamp(2rem, 3.6vw, 3.1rem)) 24px 0;
+  font-family: 'Inter Tight', sans-serif; font-weight: 500;
+  font-size: clamp(0.6rem, 0.82vw, 0.72rem);
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(240,230,208,0.78);
+  text-align: center; white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── SELECTED CLIENTS strip ─────────────────────────────────── */
+.client-strip {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+.client-strip-label {
+  font-family: 'Inter Tight', sans-serif; font-weight: 700;
+  font-size: 0.5rem; letter-spacing: 0.36em; text-transform: uppercase;
+  color: rgba(240,230,208,0.5);
+}
+.client-strip-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 6px clamp(12px, 1.5vw, 22px);
+  max-width: min(1240px, 92vw);
+}
+.client-strip-list li {
+  font-family: 'Oswald', sans-serif; font-weight: 400;
+  font-size: clamp(0.72rem, 1vw, 0.92rem);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(240,230,208,0.72);
+  white-space: nowrap;
+}
+/* Hairline separators between names. JS adds .at-line-start to the first
+   item on each wrapped line so a bar never dangles at the left edge. */
+.client-strip-list li + li { position: relative; }
+.client-strip-list li.at-line-start::before { display: none !important; }
+.client-strip-list li + li::before {
+  content: ''; position: absolute;
+  left: calc(clamp(12px, 1.5vw, 22px) / -2); top: 50%;
+  width: 1px; height: 0.72em;
+  transform: translateY(-50%);
+  background: rgba(240,230,208,0.22);
+}
+
+/* On the homepage it sits in the empty band above the section words. */
+.client-strip--home {
+  position: absolute; left: 0; right: 0;
+  bottom: calc(clamp(36px, 5vh, 64px) + 22vh);
+  z-index: 4;
+}
+
+/* On About it's a normal block above the footer. */
+.client-strip--about {
+  margin: clamp(8px, 2vh, 24px) clamp(24px, 5vw, 80px) clamp(40px, 6vh, 64px);
+  padding-top: clamp(24px, 3vh, 36px);
+  border-top: 1px solid var(--border);
+}
+
 /* ── LOWER-THIRD WORDS — strict 1/3 grid, hairline dividers between ── */
 .hero-nav {
   position: absolute; left: 0; right: 0; bottom: 0;
@@ -2427,7 +2493,7 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
   .home-name {
     position: static !important;
     transform: none !important;
-    padding: 30px 16px 10px !important;
+    padding: 30px 16px 4px !important;
     font-family: 'Oswald', sans-serif !important;
     font-weight: 700 !important;
     font-size: clamp(1.6rem, 6vw, 2.1rem) !important;
@@ -2438,6 +2504,25 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
     z-index: 6;
     flex: 0 0 auto;
   }
+  /* Tagline flows under the name instead of being absolutely placed. */
+  .home-tagline {
+    position: static !important;
+    transform: none !important;
+    padding: 0 16px 12px !important;
+    font-size: 0.52rem !important;
+    letter-spacing: 0.26em !important;
+    flex: 0 0 auto;
+  }
+  /* The three cards fill the phone screen, so the client list lives on
+     About at this size rather than being crammed in here. */
+  .client-strip--home { display: none !important; }
+  .client-strip--about {
+    margin: 0 18px 28px !important;
+    padding-top: 22px !important;
+  }
+  .client-strip-list { gap: 5px 14px !important; }
+  .client-strip-list li { font-size: 0.74rem !important; }
+  .client-strip-list li + li::before { left: -7px; }
   .home-tl, .home-tr {
     position: absolute; top: 12px;
     padding: 10px 14px !important;

@@ -1205,6 +1205,27 @@ function buildAccordPanel(key, inner) {
   inner.append(left, right);
 }
 
+/* The client strip separates names with a hairline bar. When the list wraps,
+   the first item on each new line would show a bar hanging off its left edge,
+   so tag those and let CSS hide them. Re-runs on resize. */
+function markClientStripLineStarts() {
+  document.querySelectorAll('.client-strip-list').forEach(list => {
+    let lastTop = null;
+    [...list.children].forEach(li => {
+      const top = Math.round(li.getBoundingClientRect().top);
+      li.classList.toggle('at-line-start', lastTop !== null && top !== lastTop);
+      lastTop = top;
+    });
+  });
+}
+markClientStripLineStarts();
+window.addEventListener('load', markClientStripLineStarts);
+let clientStripTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(clientStripTimer);
+  clientStripTimer = setTimeout(markClientStripLineStarts, 150);
+});
+
 /* Stamp the current year into the bio-page footer. */
 (() => {
   const yr = document.getElementById('aboutFooterYear');
