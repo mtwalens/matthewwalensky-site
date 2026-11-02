@@ -204,40 +204,38 @@ body[data-page="stills"]   .app { transform: translateX(-200vw); }
   pointer-events: none;
 }
 
-/* ── SELECTED CLIENTS strip ─────────────────────────────────── */
+/* ── CLIENTS strip ──────────────────────────────────────────
+   Two labelled groups. No separator bars and no repeated "Los Angeles" —
+   on a page this restrained, spacing alone reads cleaner than punctuation. */
 .client-strip {
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px;
   text-align: center;
   pointer-events: none;
 }
+.client-strip-row {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
+  gap: 4px clamp(14px, 1.6vw, 24px);
+  max-width: min(1100px, 92vw);
+}
 .client-strip-label {
   font-family: 'Inter Tight', sans-serif; font-weight: 700;
-  font-size: 0.5rem; letter-spacing: 0.36em; text-transform: uppercase;
-  color: rgba(240,230,208,0.5);
+  font-size: 0.5rem; letter-spacing: 0.26em; text-transform: uppercase;
+  color: rgba(240,230,208,0.55);
+  /* No fixed width: each row centres as one unit, which reads as deliberate.
+     Forcing a shared label column just left the two rows visibly off. */
 }
 .client-strip-list {
   list-style: none; margin: 0; padding: 0;
   display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 6px clamp(12px, 1.5vw, 22px);
-  max-width: min(1240px, 92vw);
+  gap: 4px clamp(14px, 1.6vw, 24px);
 }
 .client-strip-list li {
   font-family: 'Oswald', sans-serif; font-weight: 400;
-  font-size: clamp(0.72rem, 1vw, 0.92rem);
+  font-size: clamp(0.7rem, 0.92vw, 0.86rem);
   letter-spacing: 0.1em; text-transform: uppercase;
   color: rgba(240,230,208,0.72);
   white-space: nowrap;
-}
-/* Hairline separators between names. JS adds .at-line-start to the first
-   item on each wrapped line so a bar never dangles at the left edge. */
-.client-strip-list li + li { position: relative; }
-.client-strip-list li.at-line-start::before { display: none !important; }
-.client-strip-list li + li::before {
-  content: ''; position: absolute;
-  left: calc(clamp(12px, 1.5vw, 22px) / -2); top: 50%;
-  width: 1px; height: 0.72em;
-  transform: translateY(-50%);
-  background: rgba(240,230,208,0.22);
 }
 
 /* On the homepage it sits in the empty band above the section words. */
@@ -2520,9 +2518,16 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
     margin: 0 18px 28px !important;
     padding-top: 22px !important;
   }
-  .client-strip-list { gap: 5px 14px !important; }
+  /* Stack the label above its names so neither gets squeezed. */
+  .client-strip-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+  .client-strip-label { min-width: 0 !important; text-align: center !important; }
+  .client-strip { gap: 20px !important; }
+  .client-strip-list { gap: 4px 14px !important; }
   .client-strip-list li { font-size: 0.74rem !important; }
-  .client-strip-list li + li::before { left: -7px; }
   .home-tl, .home-tr {
     position: absolute; top: 12px;
     padding: 10px 14px !important;
