@@ -144,28 +144,75 @@ function buildAdminCaptionBrowser() {
   if (!host) return;
   host.innerHTML = '';
   Object.keys(galleryData).forEach(cat => {
-    const paths = galleryData[cat] || [];
-    if (!paths.length) return;
+    if (cat.startsWith('_')) return;            /* _featuredOrder isn't a category */
+    const entries = galleryData[cat] || [];
+    if (!entries.length) return;
+
     const group = document.createElement('div');
     group.className = 'admin-group';
     const head = document.createElement('div');
     head.className = 'admin-group-title';
-    head.textContent = `${cat} — ${paths.length} photos`;
+    const done = entries.filter(e => galleryCaptions[entryPath(e)]).length;
+    head.textContent = `${cat} — ${done}/${entries.length} captioned`;
     group.appendChild(head);
-    paths.forEach(path => {
+
+    entries.forEach(entry => {
+      const path = entryPath(entry);
       const row = document.createElement('div');
       row.className = 'admin-photo-row';
       row.innerHTML = `
-        <img src="${BASE}${path}" alt="" loading="lazy"/>
-        <input type="text" class="admin-photo-cap" placeholder="Add caption…" value="${(galleryCaptions[path] || '').replace(/"/g,'&quot;')}"/>
+        <button class="admin-photo-thumb" title="Click to view larger">
+          <img src="${thumbSrc(path)}" alt="" loading="lazy" decoding="async"/>
+        </button>
+        <div class="admin-photo-fields">
+          <input type="text" class="admin-photo-cap" placeholder="Add caption…"
+                 value="${(galleryCaptions[path] || '').replace(/"/g, '&quot;')}"/>
+          <span class="admin-photo-name">${path.split('/').pop()}</span>
+        </div>
       `;
       const input = row.querySelector('.admin-photo-cap');
-      input.addEventListener('input', () => { galleryCaptions[path] = input.value; });
-      input.addEventListener('blur',  () => autoSaveCaptions());
+      input.addEventListener('input', () => {
+        galleryCaptions[path] = input.value;
+        row.classList.toggle('has-caption', !!input.value.trim());
+      });
+      input.addEventListener('blur', () => autoSaveCaptions());
+      /* Enter moves to the next photo, so a batch can be typed straight through. */
+      input.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        input.blur();
+        const all = [...host.querySelectorAll('.admin-photo-cap')];
+        (all[all.indexOf(input) + 1] || input).focus();
+      });
+      row.classList.toggle('has-caption', !!galleryCaptions[path]);
+
+      /* The 56px thumb is only enough to recognise a frame you already know;
+         clicking opens the full-size version so you can actually see it. */
+      row.querySelector('.admin-photo-thumb').addEventListener('click', ev => {
+        ev.preventDefault();
+        openAdminPhotoPeek(path);
+      });
+
       group.appendChild(row);
     });
     host.appendChild(group);
   });
+}
+
+/* Large preview beside the admin panel while captioning. */
+function openAdminPhotoPeek(path) {
+  let peek = document.getElementById('adminPhotoPeek');
+  if (!peek) {
+    peek = document.createElement('div');
+    peek.id = 'adminPhotoPeek';
+    peek.className = 'admin-peek';
+    peek.innerHTML = '<img alt=""><button class="admin-peek-close" aria-label="Close">✕</button>';
+    peek.querySelector('.admin-peek-close').addEventListener('click', () => peek.classList.remove('open'));
+    peek.addEventListener('click', e => { if (e.target === peek) peek.classList.remove('open'); });
+    document.body.appendChild(peek);
+  }
+  peek.querySelector('img').src = fullSrc(path);
+  peek.classList.add('open');
 }
 
 /* Build the Video Title editor. Per project + tab, list every video with thumb
