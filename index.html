@@ -166,27 +166,66 @@
            Hidden on phones, where the three cards fill the screen — the
            About page carries the same list there. -->
       <div class="client-strip client-strip--home">
-      <div class="client-strip-row">
-        <span class="client-strip-label">Clients</span>
-        <ul class="client-strip-list">
-          <li>Boston Red Sox</li>
-          <li>USC Athletics</li>
-          <li>Principle Pictures</li>
-          <li>VIZION</li>
-          <li>3rd Space</li>
-        </ul>
+        <div class="client-strip-row">
+          <span class="client-strip-label">Clients</span>
+          <ul class="client-strip-list">
+            <li>Boston Red Sox</li>
+            <li>USC Athletics</li>
+            <li>Principle Pictures</li>
+            <li>VIZION</li>
+            <li>3rd Space</li>
+          </ul>
+        </div>
+        <div class="client-strip-row">
+          <span class="client-strip-label">Production Management</span>
+          <ul class="client-strip-list">
+            <li>Dodgers</li>
+            <li>Lakers</li>
+            <li>Kings</li>
+            <li>Sparks</li>
+            <li>FIFA</li>
+          </ul>
+        </div>
       </div>
-      <div class="client-strip-row">
-        <span class="client-strip-label">Production Management</span>
-        <ul class="client-strip-list">
-          <li>Dodgers</li>
-          <li>Lakers</li>
-          <li>Kings</li>
-          <li>Sparks</li>
-          <li>FIFA</li>
-        </ul>
+
+      <!-- Lower-third words — strict 1/3 grid with hairline dividers between -->
+      <nav class="hero-nav" aria-label="Sections">
+        <button class="hero-word hero-word--left" data-go="projects" data-for="projects">
+          <span class="hero-word-label">Projects</span>
+        </button>
+        <button class="hero-word hero-word--center" data-go="about" data-for="about">
+          <span class="hero-word-label">About</span>
+        </button>
+        <button class="hero-word hero-word--right" data-go="stills" data-for="stills">
+          <span class="hero-word-label">Stills</span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- RIGHT: Stills page (slides in when home goes LEFT) -->
+    <section class="page page--stills" data-page="stills">
+      <button class="page-tl" data-go="home">Home</button>
+      <button class="page-tr" data-action="contact">Contact</button>
+      <div class="stills-layout">
+        <aside class="stills-filters">
+          <header class="page-header">
+            <span class="page-eyebrow">03</span>
+            <h1 class="page-title">Stills</h1>
+          </header>
+          <nav class="filter-list">
+            <button class="filter-btn active" data-cat="featured">Featured</button>
+            <button class="filter-btn" data-cat="wildlife">Wildlife</button>
+            <button class="filter-btn" data-cat="landscape">Landscape</button>
+            <button class="filter-btn" data-cat="sports">Sports</button>
+            <button class="filter-btn" data-cat="street">Street</button>
+            <button class="filter-btn" data-cat="portrait">Portrait</button>
+          </nav>
+          <button class="stills-arrange-btn" id="stillsArrangeBtn">⇅ Arrange photos</button>
+        </aside>
+        <div class="stills-content" id="stillsContent">
+          <!-- gallery grid is built by JS into here -->
+        </div>
       </div>
-    </div>
     </section>
 
   </div><!-- /.app -->
@@ -219,7 +258,7 @@
         </div>
         <div class="about-actions">
           <button class="about-btn" id="contactBtn">Get in Touch</button>
-          <a class="about-btn about-btn--ghost" href="Matthew-Walensky-Resume.pdf" target="_blank">Résumé</a>
+          <a class="about-btn about-btn--ghost" href="Matthew-Walensky-Resume.pdf?v=2026-10" target="_blank" rel="noopener">Résumé</a>
         </div>
       </div>
       <div class="about-right">
@@ -251,6 +290,26 @@
         </ul>
       </div>
     </div>
+
+    <!-- Footer (same styling as project detail footers) -->
+    <footer class="proj-detail-footer about-footer">
+      <div class="proj-detail-footer-inner">
+        <div class="proj-detail-footer-left">© <span id="aboutFooterYear"></span> Matthew Walensky</div>
+        <div class="proj-detail-footer-socials">
+          <a href="https://www.instagram.com/mwal.jpeg/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/matthew-walensky/" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="mailto:mtwalensky@gmail.com" aria-label="Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,7 12,14 22,7"/></svg>
+          </a>
+        </div>
+        <div class="proj-detail-footer-right">
+          <button class="proj-detail-footer-contact" data-action="contact">Contact</button>
+        </div>
+      </div>
     </footer>
   </section>
 
