@@ -2480,7 +2480,7 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
     z-index: 0;
   }
   .hero-word--left::after   { background-image: url('images/projects/_web/days-until-college-bts.jpg'); }
-  .hero-word--center::after { background-image: url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1500w'); }
+  .hero-word--center::after { background-image: url('images/site/hero-about.jpg'); }
   .hero-word--right::after  { background-image: url('images/gallery/_web/wildlife/full/DSCF2774.jpg'); }
   .hero-word:active::after  { filter: brightness(0.7) saturate(1); }
   .hero-word + .hero-word::before { display: none; }   /* hide vertical dividers */

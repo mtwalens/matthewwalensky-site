@@ -3,10 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Matthew Walensky</title>
+
+  <title>Matthew Walensky — Videographer, Photographer &amp; Editor | Los Angeles</title>
+  <meta name="description" content="Videographer, photographer and editor based in Los Angeles. Sports, brand and documentary work for the Boston Red Sox, USC Athletics and independent film.">
+  <meta name="author" content="Matthew Walensky">
+  <link rel="canonical" href="https://matthewwalensky.com/">
+  <meta name="theme-color" content="#0d0b09">
+
+  <!-- Tab / home-screen icon.
+       Replace images/site/favicon.svg with the real logo when it's ready.
+       For full coverage also export these two and drop them in alongside it:
+         images/site/favicon-32.png        (32x32)
+         images/site/apple-touch-icon.png  (180x180, no transparency)
+       then uncomment the two lines below. -->
+  <link rel="icon" href="images/site/favicon.svg" type="image/svg+xml">
+  <!-- <link rel="icon" href="images/site/favicon-32.png" sizes="32x32" type="image/png"> -->
+  <!-- <link rel="apple-touch-icon" href="images/site/apple-touch-icon.png"> -->
+
+  <!-- Link previews (LinkedIn, iMessage, Slack, X, Facebook) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://matthewwalensky.com/">
+  <meta property="og:site_name" content="Matthew Walensky">
+  <meta property="og:title" content="Matthew Walensky — Videographer, Photographer &amp; Editor">
+  <meta property="og:description" content="Sports, brand and documentary work for the Boston Red Sox, USC Athletics and independent film. Based in Los Angeles.">
+  <meta property="og:image" content="https://matthewwalensky.com/images/site/og-card.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Matthew Walensky — portfolio">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Matthew Walensky — Videographer, Photographer &amp; Editor">
+  <meta name="twitter:description" content="Sports, brand and documentary work for the Boston Red Sox, USC Athletics and independent film. Based in Los Angeles.">
+  <meta name="twitter:image" content="https://matthewwalensky.com/images/site/og-card.jpg">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Inter+Tight:wght@500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=95">
+  <link rel="stylesheet" href="style.css?v=96">
+
+  <!-- Tells Google who this site is about, so the knowledge panel and rich
+       results show a person rather than a generic page. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Matthew Walensky",
+    "url": "https://matthewwalensky.com/",
+    "jobTitle": "Videographer, Photographer & Editor",
+    "address": { "@type": "PostalAddress", "addressLocality": "Los Angeles", "addressRegion": "CA", "addressCountry": "US" },
+    "alumniOf": { "@type": "CollegeOrUniversity", "name": "University of Southern California" },
+    "email": "mailto:mtwalensky@gmail.com",
+    "sameAs": [
+      "https://www.instagram.com/mwal.jpeg/",
+      "https://www.linkedin.com/in/matthew-walensky/"
+    ]
+  }
+  </script>
 </head>
 <body class="loading" data-page="home">
 
@@ -32,7 +82,7 @@
 
       <div class="proj-accordion" id="projAccordion">
         <button class="proj-strip" data-project="film">
-          <div class="proj-strip-bg" style="background-image:url('images/projects/_web/days-until-college-bts.jpg'), url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/3185d8c5-0532-451d-9165-e431b5791dac/IMG_3583.jpeg?format=1500w')"></div>
+          <div class="proj-strip-bg" style="background-image:url('images/projects/_web/days-until-college-bts.jpg'), url('images/site/days-until-college-still.jpg')"></div>
           <div class="proj-strip-veil"></div>
           <div class="proj-strip-label">
             <span class="proj-strip-num">01</span>
@@ -68,7 +118,7 @@
           </div>
         </button>
         <button class="proj-strip" data-project="freelance">
-          <div class="proj-strip-bg" style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/691125a0-2f3f-4923-b415-d58ea3c017a1/IMG_3725.jpeg?format=1500w')"></div>
+          <div class="proj-strip-bg" style="background-image:url('images/site/hero-projects.jpg')"></div>
           <div class="proj-strip-veil"></div>
           <div class="proj-strip-label">
             <span class="proj-strip-num">05</span>
@@ -85,11 +135,11 @@
     <!-- CENTER: Home — full-bleed hero with directional hover-reveals -->
     <section class="page page--home" data-page="home">
       <!-- Default hero background -->
-      <div class="hero-bg-img" id="heroBgDefault" style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/8e978087-cefb-4568-a667-c5e4328a6c75/IMG_3636.JPEG?format=2500w')"></div>
+      <div class="hero-bg-img" id="heroBgDefault" style="background-image:url('images/site/hero-home.jpg')"></div>
 
       <!-- Directional preview layers (slide in from the matching side on hover) -->
       <div class="hero-preview hero-preview--left"   data-for="projects" style="background-image:url('images/projects/_web/days-until-college-bts.jpg')"></div>
-      <div class="hero-preview hero-preview--center" data-for="about"    style="background-image:url('https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1500w')"></div>
+      <div class="hero-preview hero-preview--center" data-for="about"    style="background-image:url('images/site/hero-about.jpg')"></div>
       <div class="hero-preview hero-preview--right"  data-for="stills"   style="background-image:url('images/gallery/_web/wildlife/full/DSCF2774.jpg')"></div>
 
       <div class="hero-veil"></div>
@@ -184,7 +234,7 @@
         </div>
       </div>
       <div class="about-right">
-        <img src="https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/b4c390a5-199b-4729-abc9-cd24b4f92338/IMG_3731.jpeg?format=1000w" alt="Matthew Walensky"/>
+        <img src="images/site/hero-about.jpg" alt="Matthew Walensky"/>
         <div class="about-image-caption">USC · Annenberg &amp; Cinematic Arts</div>
       </div>
     </div>

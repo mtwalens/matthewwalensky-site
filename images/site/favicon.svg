@@ -1,0 +1,10 @@
+<!-- Placeholder mark: MW monogram in the site's warm white on the site's near-black.
+     Replace this file with the real logo (same filename) when it's ready — nothing
+     else needs to change. A square, high-contrast SVG reads best at 16px. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="10" fill="#0d0b09"/>
+  <text x="32" y="43"
+        font-family="Oswald, 'Helvetica Neue', Arial, sans-serif"
+        font-weight="700" font-size="30" letter-spacing="-1"
+        text-anchor="middle" fill="#f0e6d0">MW</text>
+</svg>

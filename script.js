@@ -777,39 +777,39 @@ const projects = {
     roles: ['Lead Producer', 'Assistant Director', 'Temp. Score Composer'],
     desc: 'Two best friends, Sam and Teddy, find their lifelong friendship on the line as they navigate a tumultuous summer of questionable decisions and questionable relationships, all while preparing for the wild adventure that is college life.',
     award: 'LA Shorts — Gold Laurel',
-    awardImg: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/8013b8bf-d136-4a08-bdc2-1f14a4a9c107/LAShorts%2BLaurel%2B-%2BGOLD.png',
-    img: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/3185d8c5-0532-451d-9165-e431b5791dac/IMG_3583.jpeg?format=1500w',
+    awardImg: 'images/site/lashorts-laurel.png',
+    img: 'images/site/days-until-college-still.jpg',
     video: 'https://www.youtube.com/embed/H2UyrPUpN9c',
   },
   redsox: {
     title: 'Boston Red Sox',
     category: 'Sports Media · Videographer / Editor',
-    logoImg: 'https://a.espncdn.com/i/teamlogos/mlb/500/bos.png',
+    logoImg: 'images/site/bos-logo.png',
     roles: ['Videographer', 'Editor'],
     desc: 'Internship with the Boston Red Sox media team — producing, shooting, and editing video content across music videos, game highlights, community outreach, and social media.',
-    img: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/2c334bff-a5c2-48dc-bbe9-0ab0e4d65e6a/tempImagec4GdF8.jpg',
+    img: 'images/site/redsox-cover.jpg',
     tabs: [
       {
         label: 'Music Videos',
-        img: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/1735249180505-W960E4NRFIFTO1SE8886/Screenshot+2024-12-26+at+13.29.23.png',
+        img: 'images/site/redsox-music-videos.jpg',
         video: null,
         desc: 'Produced and edited music video content for the Boston Red Sox, blending cinematic visuals with the energy and culture of the team.',
       },
       {
         label: 'Highlights',
-        img: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/1735251312314-4PV6YRM1CTHX718FN20R/s3___bgmp-arc_arc-feeds_generic-photos_to-arc_DavisSoxAstros22-642df9c7ee9cb.jpg',
+        img: 'images/site/redsox-highlights.jpg',
         video: null,
         desc: 'Shot and edited game highlight packages capturing key moments, athlete performances, and the atmosphere of Fenway Park.',
       },
       {
         label: 'Community',
-        img: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/1735253732136-P39LOL4YRJMFJEENVMBN/Screenshot+2024-12-26+at+14.55.04.png',
+        img: 'images/site/redsox-community.jpg',
         video: null,
         desc: 'Documented the Red Sox community initiatives, telling the stories of outreach programs and the team\'s impact beyond the diamond.',
       },
       {
         label: 'Social Media',
-        img: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/1735261887772-WHJ9LL3H23UWMSUWM9QY/2a80bbf53f3c1d65a36c42c2bf063508.jpg',
+        img: 'images/site/redsox-social.jpg',
         video: null,
         desc: 'Created short-form vertical content optimized for Instagram and other platforms, driving engagement for one of MLB\'s most storied franchises.',
       },
@@ -818,7 +818,7 @@ const projects = {
   usc: {
     title: 'USC Athletics',
     category: 'Sports Content · Multi-Role',
-    logoImg: 'https://a.espncdn.com/i/teamlogos/ncaa/500/30.png',
+    logoImg: 'images/site/usc-logo.png',
     roles: [
       'Technical Director — NCAA Women\'s Soccer Playoffs',
       'Technical Director — Trojan\'s Live with Lincoln Riley',
@@ -876,7 +876,7 @@ const projects = {
     title: 'Freelance',
     category: 'Independent Work · Multi-role',
     desc: 'A collection of freelance photo and video work spanning commercial, documentary, event, and narrative formats — always with a distinct visual perspective.',
-    img: 'https://images.squarespace-cdn.com/content/v1/676dbe11e77f9863643f12c3/691125a0-2f3f-4923-b415-d58ea3c017a1/IMG_3725.jpeg?format=1500w',
+    img: 'images/site/hero-projects.jpg',
     /* Renders a slideshow. Each slide is a freelance project; clicking opens its gallery.
        Add new entries here as new freelance work comes in. */
     slideshow: true,
