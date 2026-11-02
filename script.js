@@ -396,94 +396,6 @@ if (urlParams.has('admin')) {
 const IS_ADMIN = localStorage.getItem(ADMIN_KEY) === '1';
 if (IS_ADMIN) document.body.classList.add('admin-mode');
 
-let dragSrc = null;
-
-function saveOrder(category, grid) {
-  const paths = [...grid.querySelectorAll('.gallery-item')].map(el => el.dataset.path);
-  localStorage.setItem('gallery_order_' + category, JSON.stringify(paths));
-}
-
-/* Admin helper: save the current visible order. Tries the local dev-server's
-   /api/save-order endpoint first (writes straight to manifest.json). If that
-   isn't available (e.g. on the live site or with plain http.server), falls
-   back to copying the order to the clipboard so you can paste it into the
-   manifest manually. */
-async function saveAdminOrder(category, grid, btn) {
-  const paths = [...grid.querySelectorAll('.gallery-item')].map(el => el.dataset.path);
-  const original = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  try {
-    const res = await fetch('/api/save-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category, paths }),
-    });
-    if (res.ok) {
-      btn.textContent = `✓ Saved ${paths.length} → manifest.json`;
-      console.log(`[admin] saved "${category}" (${paths.length} paths) to manifest.json`);
-      setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2200);
-      return;
-    }
-    throw new Error('dev-server returned ' + res.status);
-  } catch (err) {
-    /* Fallback: clipboard. */
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(paths, null, 2));
-      btn.textContent = `✓ Copied ${paths.length} — paste into manifest.json`;
-      console.log(`[admin] no dev-server — copied "${category}" order to clipboard`);
-    } catch (e) {
-      btn.textContent = '✗ Save failed (see console)';
-      console.error('[admin] save + clipboard both failed:', err, e);
-    }
-    setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2800);
-  }
-}
-
-/* Admin: flag/unflag a photo for the Featured tab. Writes to manifest.json
-   through the dev-server, and keeps the in-memory copy in sync so switching
-   to Featured reflects the change without a reload. */
-async function saveFeatured(path, featured) {
-  try {
-    const res = await fetch('/api/save-featured', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path, featured }),
-    });
-    if (!res.ok) throw new Error('server returned ' + res.status);
-    const { total } = await res.json();
-
-    for (const entries of Object.values(galleryData)) {
-      const hit = entries.find(e => entryPath(e) === path);
-      if (hit) { if (featured) hit.feat = true; else delete hit.feat; }
-    }
-    /* Featured is derived, so force it to rebuild next time it's opened. */
-    const panel = document.getElementById('stills-panel-featured');
-    if (panel) { panel.remove(); }
-
-    flashAdminToast(`${featured ? '★ Added to' : '☆ Removed from'} Featured (${total} total)`);
-  } catch (e) {
-    console.warn('[admin] featured save failed:', e);
-    flashAdminToast('✗ Featured save failed — is dev-server.py running?');
-  }
-}
-
-/* Silent autosave for photo order: fires on drag-end, no UI. */
-async function autoSaveAdminOrder(category, grid) {
-  const paths = [...grid.querySelectorAll('.gallery-item')].map(el => el.dataset.path);
-  try {
-    await fetch('/api/save-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category, paths }),
-    });
-    flashAdminToast(`Saved ${category} (${paths.length})`);
-  } catch (e) {
-    console.warn('[admin] autosave failed:', e);
-  }
-}
-
 /* Silent autosave for video order/titles: fires on drag-end or input blur. */
 async function autoSaveVideos(project, tabLabel, list) {
   const tabSlug = tabLabel ? slugify(tabLabel) : null;
@@ -654,15 +566,10 @@ function buildPanel(category, explicitPanel) {
     for (let i = 0; i < maxLen; i++) {
       arrays.forEach(arr => { if (arr[i]) entries.push(arr[i]); });
     }
-  } else if (IS_ADMIN) {
-    /* Admins see their in-progress order from localStorage. */
-    const saved = localStorage.getItem('gallery_order_' + category);
-    const byPath = new Map((galleryData[category] || []).map(e => [entryPath(e), e]));
-    entries = saved
-      ? JSON.parse(saved).map(p => byPath.get(p) || { p }).filter(Boolean)
-      : (galleryData[category] || []);
   } else {
-    /* Public always sees the canonical order from manifest.json. */
+    /* Everyone, admin included, sees the canonical order from manifest.json.
+       Arrange writes straight to the manifest, so there's no separate
+       in-progress copy to reconcile. */
     entries = galleryData[category] || [];
   }
 

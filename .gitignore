@@ -35,3 +35,6 @@ images/gallery/street/
 images/gallery/portrait/
 images/gallery/product/
 images/gallery/_originals-non-web/
+
+# Scratch: assets no longer referenced by the site, kept locally just in case
+_unused-assets/
