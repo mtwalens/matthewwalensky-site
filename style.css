@@ -12,6 +12,9 @@
   --warm-white: #f0e6d0;
   --ticker-h:   34px;
   --nav-h:      72px;
+  /* Space kept clear above the Stills filmstrip so the HOME / CONTACT
+     corners stay readable. The photos run flush to the bottom edge. */
+  --stills-top-clear: 44px;
   --ease:       cubic-bezier(0.32, 0.72, 0, 1);   /* Apple liquid */
   --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);    /* Apple ease-out-expo */
 }
@@ -394,10 +397,13 @@ body.proj-detail-open .page--projects .page-tr {
   background: var(--gold); transform: translateY(-50%);
 }
 
+/* No padding here — the filmstrip runs to the bottom edge of the screen.
+   Clearance for the HOME / CONTACT corners is added on .gallery-panel below,
+   so it scrolls with the photos rather than cropping the scroll area. */
 .stills-content {
   overflow-x: auto;
   overflow-y: hidden;
-  padding: clamp(40px, 6vh, 80px) clamp(24px, 3vw, 48px);
+  padding: 0;
   scroll-behavior: smooth;
 }
 /* Hint scrollbar so people know they can scroll right */
@@ -415,17 +421,22 @@ body.proj-detail-open .page--projects .page-tr {
 .stills-content .gallery-panel--stills {
   display: block !important;
   height: 100% !important;
+  /* Top clearance only, so the photos sit flush against the bottom edge.
+     (This wrapper used to carry 72px all round, left over from the tabbed
+     modal — together with the old .stills-content padding it was eating
+     200px of a 900px screen.) */
+  padding: var(--stills-top-clear) 0 0 !important;
   /* Hugs the grid, which sizeStillsGrid() gives an explicit width. */
   width: fit-content !important;
 }
 .stills-content .gallery-grid {
   display: flex !important;
   flex-direction: column !important;
-  gap: 8px !important;
+  gap: 6px !important;
   /* Width is set explicitly by sizeStillsGrid(); max-content is circular
      against the height-derived item widths. */
   width: auto;
-  height: calc(100vh - 200px) !important;
+  height: calc(100vh - var(--stills-top-clear)) !important;
   columns: unset !important;
   grid-template-columns: unset !important;
   grid-template-rows: unset !important;
@@ -435,7 +446,7 @@ body.proj-detail-open .page--projects .page-tr {
 .stills-content .gallery-row {
   display: flex !important;
   flex-direction: row !important;
-  gap: 8px !important;
+  gap: 6px !important;
   flex: 1 1 0 !important;
   min-height: 0 !important;
   align-items: stretch !important;
