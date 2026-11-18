@@ -28,11 +28,6 @@
       "feat": true
     },
     {
-      "p": "wildlife/DSCF2774.jpg",
-      "w": 600,
-      "h": 900
-    },
-    {
       "p": "wildlife/_MG_9922.jpg",
       "w": 900,
       "h": 600,
@@ -42,6 +37,16 @@
       "p": "wildlife/_MG_0108.jpg",
       "w": 900,
       "h": 506
+    },
+    {
+      "p": "wildlife/DSCF2774.jpg",
+      "w": 600,
+      "h": 900
+    },
+    {
+      "p": "wildlife/IMG_5746.jpg",
+      "w": 900,
+      "h": 600
     },
     {
       "p": "wildlife/DSCF2937.jpg",
@@ -57,6 +62,11 @@
       "p": "wildlife/DSCF3001.jpg",
       "w": 900,
       "h": 600
+    },
+    {
+      "p": "wildlife/DSCF3108.jpg",
+      "w": 900,
+      "h": 601
     },
     {
       "p": "wildlife/_MG_9370.jpg",
@@ -401,11 +411,6 @@
       "h": 600
     },
     {
-      "p": "wildlife/DSCF3108.jpg",
-      "w": 900,
-      "h": 601
-    },
-    {
       "p": "wildlife/DSCF3132.jpg",
       "w": 675,
       "h": 900
@@ -432,11 +437,6 @@
     },
     {
       "p": "wildlife/IMG_4999.jpg",
-      "w": 900,
-      "h": 600
-    },
-    {
-      "p": "wildlife/IMG_5746.jpg",
       "w": 900,
       "h": 600
     },
@@ -551,6 +551,11 @@
       "h": 900
     },
     {
+      "p": "landscape/_MG_6253.jpg",
+      "w": 675,
+      "h": 900
+    },
+    {
       "p": "landscape/_MG_6252.jpg",
       "w": 675,
       "h": 900
@@ -592,6 +597,11 @@
       "h": 600
     },
     {
+      "p": "landscape/YOSEMITE-3.jpg",
+      "w": 900,
+      "h": 675
+    },
+    {
       "p": "landscape/_MG_8911.jpg",
       "w": 900,
       "h": 675,
@@ -624,11 +634,6 @@
     },
     {
       "p": "landscape/IMG_8909.jpg",
-      "w": 900,
-      "h": 675
-    },
-    {
-      "p": "landscape/YOSEMITE-3.jpg",
       "w": 900,
       "h": 675
     },
@@ -899,11 +904,6 @@
     },
     {
       "p": "landscape/_MG_6138.jpg",
-      "w": 675,
-      "h": 900
-    },
-    {
-      "p": "landscape/_MG_6253.jpg",
       "w": 675,
       "h": 900
     }
