@@ -317,6 +317,16 @@ body[data-page="stills"]   .app { transform: translateX(-200vw); }
 }
 .page-tl { left: clamp(24px, 4vw, 56px); }
 .page-tr { right: clamp(24px, 4vw, 56px); }
+
+/* On Stills the photos run to the top of the clearance band, so centre both
+   corners inside that band — otherwise CONTACT hangs over the first row. */
+.page--stills .page-tl,
+.page--stills .page-tr {
+  top: 0;
+  height: var(--stills-top-clear);
+  display: flex; align-items: center;
+  padding-top: 0; padding-bottom: 0;
+}
 .page-tl:hover, .page-tr:hover { color: var(--gold); }
 
 /* When the project detail overlay is open, hide the page top-bar buttons
@@ -369,11 +379,39 @@ body.proj-detail-open .page--projects .page-tr {
 .stills-filters { flex: 0 0 240px; }
 .stills-content { flex: 1 1 auto; min-width: 0; min-height: 0; }
 .stills-filters {
+  position: relative;
   border-right: 1px solid var(--border);
   padding: clamp(70px, 10vh, 120px) clamp(20px, 2vw, 36px);
   overflow-y: auto;
   background: var(--surface);
 }
+
+/* A warm wash across the sidebar that only appears while a filter is hovered,
+   and follows whichever one the cursor is on (--glow-y, set in script.js).
+   Sits behind the text, never intercepts clicks. */
+.stills-filters::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease, background-position 0.3s ease;
+  background: radial-gradient(150% 30% at 0% var(--glow-y, 50%),
+    rgba(201,151,74,0.5)  0%,
+    rgba(201,151,74,0.2)  38%,
+    rgba(201,151,74,0.05) 62%,
+    transparent 80%);
+}
+.stills-filters:has(.filter-btn:hover)::after { opacity: 1; }
+/* Keep the list above the wash. */
+.stills-filters .page-header,
+.stills-filters .filter-list,
+.stills-filters .stills-arrange-btn { position: relative; z-index: 1; }
+
+/* While hovering the list, the others recede so the one under the cursor
+   reads as lit rather than merely lighter. */
+.filter-list:hover .filter-btn { color: rgba(240,230,208,0.42); }
+.filter-list .filter-btn:hover { color: var(--warm-white); }
 .stills-filters .page-header { margin-bottom: 36px; }
 .stills-filters .page-title { font-size: clamp(2rem, 4vw, 3rem); }
 .filter-list {
