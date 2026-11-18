@@ -1,6 +1,33 @@
-/images/*
+# Image FILES are safe to cache hard: a photo's bytes never change under the
+# same name, and new photos arrive under new names.
+#
+# The JSON that lists them is NOT — manifest.json and captions.json are
+# rewritten every time photos or captions change. They must never be marked
+# immutable, or a browser will serve a stale photo list for a year and the
+# gallery will look like it is missing images.
+/images/gallery/_web/*
   Cache-Control: public, max-age=31536000, immutable
 
+/images/site/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/images/projects/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Data the site reads at runtime — always revalidate.
+/images/gallery/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+/images/gallery/captions.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+/content.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+/videos/links.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+# CSS and JS carry ?v= cache busters, so the file at a given URL never changes.
 /*.css
   Cache-Control: public, max-age=31536000, immutable
 

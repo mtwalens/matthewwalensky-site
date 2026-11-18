@@ -623,7 +623,13 @@ function buildPanel(category, explicitPanel) {
   const grid = document.createElement('div');
   grid.className = 'gallery-grid';
 
-  entries.forEach(entry => {
+  /* The first screenful loads eagerly so the gallery is never blank on
+     arrival; the rest stay lazy. Laziness alone meant a category opened
+     empty and filled in behind a fast scroll, which reads as missing
+     photos rather than as loading. */
+  const EAGER_COUNT = 14;
+
+  entries.forEach((entry, i) => {
     const path = entryPath(entry);
     const item = document.createElement('div');
     item.className = 'gallery-item';
@@ -634,7 +640,12 @@ function buildPanel(category, explicitPanel) {
     const img = document.createElement('img');
     img.src = thumbSrc(path);
     img.alt = '';
-    img.loading = 'lazy';
+    if (i < EAGER_COUNT) {
+      img.loading = 'eager';
+      img.fetchPriority = i < 6 ? 'high' : 'auto';
+    } else {
+      img.loading = 'lazy';
+    }
     img.decoding = 'async';
     /* Intrinsic size lets the browser reserve space before the image loads. */
     if (entry.w && entry.h) { img.width = entry.w; img.height = entry.h; }

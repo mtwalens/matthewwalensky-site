@@ -184,8 +184,21 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+class DevServer(socketserver.ThreadingTCPServer):
+    """Threaded, so one slow image doesn't stall the rest.
+
+    The single-threaded TCPServer handled one request at a time. A gallery
+    page asks for ~100 images at once, so the backlog overflowed and the
+    browser got connection resets — photos silently failed to appear, and it
+    got worse the larger the galleries grew.
+    """
+    daemon_threads = True        # don't hang on exit
+    allow_reuse_address = True   # restart immediately after Ctrl-C
+    request_queue_size = 128     # deeper accept backlog for image bursts
+
+
 if __name__ == "__main__":
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    with DevServer(("", PORT), Handler) as httpd:
         print(f"📡 dev server on http://localhost:{PORT}")
         print(f"   admin: http://localhost:{PORT}/?admin=1")
         print(f"   save-order endpoint: POST /api/save-order")

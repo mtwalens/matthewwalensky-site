@@ -375,27 +375,49 @@ body.proj-detail-open .page--projects .page-tr {
 .stills-layout {
   display: flex;
   width: 100%; height: 100%;
-}
-.stills-filters { flex: 0 0 240px; }
-.stills-content { flex: 1 1 auto; min-width: 0; min-height: 0; }
-/* The margin is a brown wash that fades out toward the photos instead of
-   ending at a hard border, and the whole panel lifts while any filter is
-   hovered. --margin-lift drives the brightness so one value moves it all. */
-.stills-filters {
-  --margin-lift: 0;
+  /* Anchors the floating filter panel. */
   position: relative;
+}
+/* The filters float over the photos rather than occupying a column, so the
+   filmstrip runs the full width of the screen and slides in underneath them. */
+.stills-filters {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: clamp(300px, 26vw, 420px);
+  z-index: 6;
+  /* Transparent to clicks so photos under the faded part stay reachable;
+     the list itself takes them back below. */
+  pointer-events: none;
+}
+.stills-content { flex: 1 1 auto; min-width: 0; min-height: 0; }
+/* No brown panel and no hard edge — just a black scrim over the photos,
+   dense at the left so the labels stay legible and gone by the right. It
+   deepens while a filter is hovered so the letters read clearly. */
+.stills-filters {
+  --scrim: 0.62;
   padding: clamp(70px, 10vh, 120px) clamp(20px, 2vw, 36px);
-  overflow-y: auto;
+  overflow: visible;
   background: linear-gradient(
     to right,
-    color-mix(in srgb, var(--surface), #c9974a calc(var(--margin-lift) * 20%)) 0%,
-    color-mix(in srgb, var(--surface), #c9974a calc(var(--margin-lift) * 13%)) 42%,
-    color-mix(in srgb, var(--surface) 50%, transparent) 76%,
-    transparent 100%
+    rgba(13, 11, 9, var(--scrim)) 0%,
+    rgba(13, 11, 9, calc(var(--scrim) * 0.78)) 38%,
+    rgba(13, 11, 9, calc(var(--scrim) * 0.38)) 66%,
+    rgba(13, 11, 9, 0) 100%
   );
   transition: background 0.45s ease;
 }
-.stills-filters:has(.filter-btn:hover) { --margin-lift: 1; }
+/* Deepens on hover so the labels read clearly against whatever is behind. */
+.stills-filters:has(.filter-btn:hover) { --scrim: 0.86; }
+/* Give the controls their clicks back (the panel itself passes them through). */
+.stills-filters .page-header,
+.stills-filters .filter-list,
+.stills-filters .stills-arrange-btn { pointer-events: auto; }
+/* Now that photos sit underneath, the controls only claim the width they
+   actually draw — a full-width button would block clicks on the photo
+   beside its label. */
+.stills-filters .filter-list,
+.stills-filters .page-header { width: fit-content; }
+.stills-filters .filter-btn { width: fit-content; }
+.stills-filters .stills-arrange-btn { width: fit-content; }
 .stills-filters .page-header { margin-bottom: 36px; }
 .stills-filters .page-title { font-size: clamp(2rem, 4vw, 3rem); }
 .filter-list {
@@ -2807,13 +2829,23 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
     height: 100vh !important;
     min-height: 0 !important;
   }
+  /* Back to a solid bar in normal flow — the desktop treatment floats the
+     filters over the photos, which on a phone would cover the whole gallery. */
   .stills-filters {
+    position: static !important;
+    width: auto !important;
+    inset: auto !important;
+    pointer-events: auto !important;
     flex: 0 0 auto !important;
     border-right: none !important;
     border-bottom: 1px solid var(--border) !important;
     padding: 56px 16px 12px !important;
-    background: var(--surface);
+    background: var(--surface) !important;
   }
+  .stills-filters .page-header,
+  .stills-filters .filter-list,
+  .stills-filters .filter-btn,
+  .stills-filters .stills-arrange-btn { width: auto !important; }
   .stills-filters .page-header { margin-bottom: 12px !important; }
   .stills-filters .page-title { font-size: 1.4rem !important; }
   .filter-list {
@@ -2847,6 +2879,9 @@ body.admin-mode .admin-panel.open { transform: translateX(0); }
   .stills-content .gallery-panel--stills {
     width: 100% !important;
     height: auto !important;
+    /* The desktop rule reserves space for the floating corners; on mobile the
+       filters sit above in normal flow, so that gap is just dead space. */
+    padding: 0 !important;
   }
   .stills-content .gallery-grid {
     display: block !important;
