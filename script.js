@@ -803,29 +803,6 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => renderStills(btn.dataset.cat));
 });
 
-/* The sidebar's warm wash (see .stills-filters::after) follows whichever
-   filter is hovered. CSS owns whether it's visible; this only says where.
-   Skipped on touch, where there's no hover and the sidebar is a top bar. */
-(() => {
-  const side = document.querySelector('.stills-filters');
-  const list = document.querySelector('.filter-list');
-  if (!side || !list) return;
-  if (window.matchMedia('(hover: none)').matches) return;
-
-  const place = btn => {
-    const sr = side.getBoundingClientRect();
-    const br = btn.getBoundingClientRect();
-    if (!sr.height) return;
-    const pct = ((br.top + br.height / 2) - sr.top) / sr.height * 100;
-    side.style.setProperty('--glow-y', pct.toFixed(1) + '%');
-  };
-
-  list.addEventListener('pointerover', e => {
-    const btn = e.target.closest('.filter-btn');
-    if (btn) place(btn);
-  });
-})();
-
 /* If user visits #stills directly, build it on initial load too. */
 if (document.body.dataset.page === 'stills') ensureStillsBuilt();
 
